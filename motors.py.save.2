@@ -1,0 +1,110 @@
+#Author Elliott Tiver
+#Flinders Uinvierty Information Technology Student
+import RPi.GPIO as GPIO
+import time
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+#output for front motor controller
+GPIO.setup(23, GPIO.OUT) #IN1
+GPIO.setup(24, GPIO.OUT) #IN2
+GPIO.setup(25, GPIO.OUT) #IN3
+GPIO.setup(8, GPIO.OUT)  #IN4
+#output for rear motor controller
+GPIO.setup(17, GPIO.OUT) #IN1
+GPIO.setup(18, GPIO.OUT) #IN2
+GPIO.setup(27, GPIO.OUT) #IN3
+GPIO.setup(22, GPIO.OUT) #IN4
+#output for IR sensors
+GPIO.setup(8, GPIO.OUT) #VCC Sensor 1 Left side  (Power)
+GPIO.setup(9, GPIO.IN) #Left sensor obstace detection (Input)
+GPIO.setup(10,GPIO.OUT) #VCC sensor 2 Right side (Power)
+GPIO.setup(11, GPIO.IN) #Right sensor obstace detection (Input)
+#define movment functions
+def fwd(i):
+	GPIO.output(23, True)
+#	GPIO.output(25, True)
+#	GPIO.output(17, True)
+#	GPIO.output(27, True)
+	time.sleep(i)
+def rev(i):
+	GPIO.output(18, True)
+	GPIO.output(22, True)
+	GPIO.output(17, False)
+	GPIO.output(27, False)
+	time.sleep(i)
+def turnLEFT(i):
+	GPIO.output(18,	False)
+	GPIO.output(22,	False)
+	GPIO.output(17, True)
+	GPIO.output(27, False)
+	time.sleep(i)
+def pivotleft(i):
+	GPIO.output(18, False)
+	GPIO.output(22, True)
+	GPIO.output(17, True)
+	GPIO.output(27, False)
+	time.sleep(i)
+def turnRIGHT(i):
+	GPIO.output(27,True)
+	GPIO.output(17,False)
+	GPIO.output(18,False)
+	GPIO.output(22, False)
+	time.sleep(i)
+def pivotright(i):
+	GPIO.output(27, True)
+	GPIO.output(17, False)
+	GPIO.output(18, True)
+	GPIO.output(22, False)
+	time.sleep(i)
+def stop(i):
+	GPIO.output(17, True)
+	GPIO.output(18, True)
+	GPIO.output(27, True)
+	GPIO.output(22, True)
+	time.sleep(i)
+#IR based obstacle avoidence desicsion tree
+def detect():
+	#Go until obstace detected then reverse and turn
+	while True:
+		leftsensor = GPIO.input(9)
+		rightsensor = GPIO.input(11)
+		#if obstacle detected on left turn reverse and turn right
+		if(leftsensor == False):
+			print("obstacle on left")
+			stop(0.5)
+			rev(2)
+			pivotright(2)
+		#if obstacle is deteced on right reverse and turn left
+		elif(rightsensor == False):
+			print ("obstacle on right")
+			stop(0.5)
+			rev(2)
+			pivotleft(2)
+		#if obstacle detected on both sensors reverse and turn right
+		elif(leftsensor == False and rightsensor == False):
+			print("Obstacle on Left and Right sensors")
+			stop(0.5)
+			rev(2)
+			pivotright(2)
+		else:
+			fwd(1)
+#Xbox controller override
+#def controller():
+	
+#Mode Select
+def optionselect():
+	print("Booting up...")
+	print("Press 1 For Autonomus Obstacle Avoidence")
+	print("Press 2 For Wireless Controller Mode")
+	print("Press 3 To Shutdown")
+	selection = input("Select Mode: ")
+	if selection == 1:
+		detect()
+	elif selection == 3:
+		print("Shutting Down...")
+		while True:
+			stop(1)
+optionselect()
+
+
+
