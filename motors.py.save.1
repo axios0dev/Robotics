@@ -3,7 +3,6 @@
 import RPi.GPIO as GPIO
 import time
 import curses
-import os
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -127,13 +126,10 @@ def skid(i):
 #Arrow Pad Control Of Robot
 #First RC Function Test
 def keypad():
-	import curses
-	#Curses setup for keyboard input
+	#Curses setup for input
 	screen = curses.initscr()
 	curses.noecho()
-	#curses.cbreak()
-	#screen.nodelay(1)
-	curses.halfdelay(5)
+	curses.cbreak()
 	screen.keypad(True)
 	#Option Read Out
 	screen.addstr("Use The Arrow Keys To Control Robot\n")
@@ -143,59 +139,53 @@ def keypad():
 		char = screen.getch()
 		#return to main menu 
 		if char == ord('q'):
-			curses.nocbreak(); screen.keypad(False); curses.echo() 
+			curses.nocbreak()
+			screen.keypad(False)
+			curses.echo()
 			curses.endwin()
-			os.system('clear')
 			optionselect()
 			break
-		elif char == ord('k'):
-			screen.addstr(3,0,'Skids!!')
-			skid(0.01)
-		elif char == ord('d'):
-			screen.addstr(3,0,'Right\n')
-			turnRIGHT(0.01)
-		elif char == ord('a'):
-			screen.addstr(3,0,'Left\n')
-			turnLEFT(0.01)
-		elif char == ord('w'):
-			screen.addstr(3,0,'Forward\n')
-			fwd(0.01)
-		elif char == ord('s'):
-			screen.addstr(3,0,'Reverse\n')
-			rev(0.01)
-		elif char == ord('j'):
-			screen.addstr(3,0,'Left Pivot\n')
-			pivotleft(0.01)
-		elif char == ord('l'):
-			screen.addstr(3,0,'Right Pivot\n')
-			pivotright(0.01)
-		elif char == curses.ERR:
-			screen.addstr(3,0,'Idle\n')
-			stop(0.01)
-#IR based obstacle avoidence desicsion tree
-def detectmenu():
-	print("Auto Roam With Collision Detection Enabled")
-	print("Press 1 To Roam Autonomusly")
-	print("Press 2 To Stop")
-	print("Press 3 To Return To Main Menu")
-	USRINPT = input("Select Mode: ")
-	if USRINPT == 1:
-		print("Collision Detection Log: ")
-		detect()
-	elif USRINPT == 2:
-		stop(1)
-		detectmenu()
-	elif USRINPT == 3:
-		os.system('clear')
-		optionselect()
 
+		elif char == ord('s'):
+			screen.addstr(3,0,' Skids!!')
+			skid(0.03)
+
+		elif char == curses.KEY_RIGHT:
+			screen.addstr(3,0,' Right\n')
+			turnRIGHT(0.01)
+
+		elif char == curses.KEY_LEFT:
+			screen.addstr(3,0,' Left\n')
+			turnLEFT(0.01)
+
+		elif char == curses.KEY_UP:
+			screen.addstr(3,0,' Forward\n')
+			fwd(0.01)
+
+		elif char == curses.KEY_DOWN:
+			screen.addstr(3,0,' Reverse\n')
+			rev(0.01)
+
+		elif char == ord('a'):
+			screen.addstr(3,0,' Left Pivot\n')
+			pivotleft(0.01)
+
+		elif char == ord('d'):
+			screen.addstr(3,0,' Right Pivot\n')
+			pivotright(0.01)	
+		
+			
+
+#IR based obstacle avoidence desicsion tree
 def detect():
+	print("Auto Roam With Collision Detection Enabled")
+	print("To Quit Current Mode Press Q")
+	print("Collsion Detection: ")
 	#Go until obstace detected then reverse and turn
 	while True:
 		leftsensor = GPIO.input(9)
 		rightsensor = GPIO.input(11)
 		#if obstacle detected on left turn reverse and turn right
-
 		if(leftsensor == False):
 			print("obstacle on left")
 			stop(0.5)
@@ -215,7 +205,6 @@ def detect():
 			pivotright(0.3)
 		else:
 			fwd(0.5)
-	
 #Xbox controller override
 #def controller():
 	
@@ -230,18 +219,17 @@ def optionselect():
 	print("Press 5 For Remote Motor Shutdown")
 	selection = input("Select Mode: ")
 	if selection == 1:
-		detectmenu()
+		detect()
 	elif selection == 2:
-		print("Rear Wheel Drive Inclusive Enabled")
 		skid(10)
 	elif selection == 5:
-		print("Cutting Power To All Motors...")
-		stop(1)
-		os.system('clear')
-		optionselect()
+		print("Cutting Motor Power")
+		while True:
+			stop(1)
 	elif selection == 3:
-		print("Control Robot With Arrow Pad And A,S,D")
+		print("Control Robot With Arrow Pad")
 		keypad()
+
 	elif selection == 0:
 		fwd(0.5)
 		turnRIGHT(0.2)
