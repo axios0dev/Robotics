@@ -7,27 +7,29 @@ import os
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-#Front
+#Pin Setup
+#Front Motors
 #output for front motor controller
 GPIO.setup(23, GPIO.OUT) #IN1
 GPIO.setup(24, GPIO.OUT) #IN2
 GPIO.setup(25, GPIO.OUT) #IN3
 GPIO.setup(12, GPIO.OUT) #IN4
-#Back
+#Back Motors
 #output for rear motor controller
 GPIO.setup(17, GPIO.OUT) #IN1
 GPIO.setup(18, GPIO.OUT) #IN2
 GPIO.setup(27, GPIO.OUT) #IN3
 GPIO.setup(22, GPIO.OUT) #IN4
 
-#IR Sensors
-#output for IR sensors
-GPIO.setup(8, GPIO.OUT) #VCC Sensor 1 Left side  (Power)
-GPIO.setup(9, GPIO.IN) #Left sensor obstace detection (Input)
-GPIO.setup(10,GPIO.OUT) #VCC sensor 2 Right side (Power)
-GPIO.setup(11, GPIO.IN) #Right sensor obstace detection (Input)
+#Ultrasonic Sensor
+TRIG = 2
+ECHO = 3
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+GPIO.output(TRIG, False) #Disable Transmitter
+time.sleep(0.1)
 
-#define movment functions
+#Movment And Functions
 def fwd(i):
 	#Front
 	GPIO.output(24, True)  #F/L FWD
@@ -124,10 +126,10 @@ def skid(i):
 	GPIO.output(18, True)  #B/R FWD
 	GPIO.output(17, False) #B/R REV	
 	time.sleep(i)
+
 #Arrow Pad Control Of Robot
 #First RC Function Test
 def keypad():
-	import curses
 	#Curses setup for keyboard input
 	screen = curses.initscr()
 	curses.noecho()
@@ -148,6 +150,7 @@ def keypad():
 			os.system('clear')
 			optionselect()
 			break
+		#Keyboard keybinds
 		elif char == ord('k'):
 			screen.addstr(3,0,'Skids!!')
 			skid(0.01)
@@ -172,7 +175,8 @@ def keypad():
 		elif char == curses.ERR:
 			screen.addstr(3,0,'Idle\n')
 			stop(0.01)
-#IR based obstacle avoidence desicsion tree
+
+#testing 
 def detectmenu():
 	print("Auto Roam With Collision Detection Enabled")
 	print("Press 1 To Roam Autonomusly")
@@ -189,38 +193,37 @@ def detectmenu():
 		os.system('clear')
 		optionselect()
 
-def detect():
-	#Go until obstace detected then reverse and turn
-	while True:
-		leftsensor = GPIO.input(9)
-		rightsensor = GPIO.input(11)
-		#if obstacle detected on left turn reverse and turn right
+#Ultrasonic Collision Avoidance Mode
+def collisiondetect():
+	#Send and recvice pulse
+	print("Scanning For Potential Collision...")
+	GPIO.output(TRIG, True)
+	time.sleep(0.00001)
+	GPIO.output(TRIG, False)
+	#convert input to a centimere distance
+	while GPIO.input(ECHO) == 0:
+		pass
+	start = time.time()
+	while GPIO.input(ECHO) == 1:
+		pass
+	stop = time.time()
+		
+	duration = stop - start
+	distance = duration * 17150
+	rdist = round(distance, 2)
+	print "Closest Detectable Ojbect Distance:", rdist, "CM"
+	#infinatly avoid objects
+	if  rdist > 30:
+		fwd(0.1)
+	elif rdist <= 30:
+		rev(0.2)
+		pivotleft(0.3)	
 
-		if(leftsensor == False):
-			print("obstacle on left")
-			stop(0.5)
-			rev(0.5)
-			pivotright(0.3)
-		#if obstacle is deteced on right reverse and turn left
-		elif(rightsensor == False):
-			print ("obstacle on right")
-			stop(0.5)
-			rev(0.5)
-			pivotleft(0.3)
-		#if obstacle detected on both sensors reverse and turn right
-		elif(leftsensor == False and rightsensor == False):
-			print("Obstacle on Left and Right sensors")
-			stop(0.5)
-			rev(0.5)
-			pivotright(0.3)
-		else:
-			fwd(0.5)
-	
 #Xbox controller override
 #def controller():
 	
 
-#Mode Select Menu
+#Main Mode Select Menu
 def optionselect():
 	print("Robotic Rover Option Menu Selection")
 	print("Press 1 For Autonomus Obstacle Avoidence")
@@ -230,7 +233,8 @@ def optionselect():
 	print("Press 5 For Remote Motor Shutdown")
 	selection = input("Select Mode: ")
 	if selection == 1:
-		detectmenu()
+		while True:
+			collisiondetect()
 	elif selection == 2:
 		print("Rear Wheel Drive Inclusive Enabled")
 		skid(10)
