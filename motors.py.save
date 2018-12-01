@@ -137,29 +137,23 @@ def keypad():
 	#screen.nodelay(1)
 	curses.halfdelay(5)
 	screen.keypad(True)
-	collisionstate = 'ON'
 	#Option Read Out
 	screen.addstr("Use The Arrow Keys To Control Robot\n")
 	screen.addstr("To Quit Current Mode Press Q\n")
-	screen.addstr("To Enable Collision Detection And Avoidance Press E, To Disable Press D\n")
-	#screen.addstr("Collision Avoidance State: ", collisionstate\n)
 	screen.addstr("Current Command: ")
+
+	#collision detect implementation test
+
+
+
+
+
+
+
 	while True:
 		char = screen.getch()
-		#Ultrasonic colission avoidance test
-		collisionavoidance = collisiondetect()
-		#control structure
-		if collisionavoidance <= 30 and collisionstate == 'ON':
-			screen.addstr(3,0, '>> Avoiding Collision!!')
-			rev(0.2)
-		elif char == ord('e'):
-			screen.addstr(3,0, '>> Collision Avoidance Enabled')
-			collisionstate = 'ON'
-		elif char == ord('d'):
-			screen.addstr(3,0, '>> Warning Collision Avoidance Disabled')
-			collisionstate = 'OFF'	
 		#return to main menu 
-		elif char == ord('q'):
+		if char == ord('q'):
 			curses.nocbreak(); screen.keypad(False); curses.echo() 
 			curses.endwin()
 			os.system('clear')
@@ -167,28 +161,28 @@ def keypad():
 			break
 		#Keyboard keybinds
 		elif char == ord('k'):
-			screen.addstr(3,0,'>> Skids!!')
+			screen.addstr(3,0,'Skids!!')
 			skid(0.01)
 		elif char == ord('d'):
-			screen.addstr(3,0,'>> Right\n')
+			screen.addstr(3,0,'Right\n')
 			turnRIGHT(0.01)
 		elif char == ord('a'):
-			screen.addstr(3,0,'>> Left\n')
+			screen.addstr(3,0,'Left\n')
 			turnLEFT(0.01)
 		elif char == ord('w'):
-			screen.addstr(3,0,'>> Forward\n')
+			screen.addstr(3,0,'Forward\n')
 			fwd(0.01)
 		elif char == ord('s'):
-			screen.addstr(3,0,'>> Reverse\n')
+			screen.addstr(3,0,'Reverse\n')
 			rev(0.01)
 		elif char == ord('j'):
-			screen.addstr(3,0,'>> Left Pivot\n')
+			screen.addstr(3,0,'Left Pivot\n')
 			pivotleft(0.01)
 		elif char == ord('l'):
-			screen.addstr(3,0,'>> Right Pivot\n')
+			screen.addstr(3,0,'Right Pivot\n')
 			pivotright(0.01)
 		elif char == curses.ERR:
-			screen.addstr(3,0,'>> Idle\n')
+			screen.addstr(3,0,'Idle\n')
 			stop(0.01)
 
 #testing 
@@ -208,9 +202,10 @@ def detectmenu():
 		os.system('clear')
 		optionselect()
 
-#Ultrasonic Collision Avoidance Measuring Distance
+#Ultrasonic Collision Avoidance Mode
 def collisiondetect():
 	#Send and recvice pulse
+	print("Scanning For Potential Collision...")
 	GPIO.output(TRIG, True)
 	time.sleep(0.00001)
 	GPIO.output(TRIG, False)
@@ -221,19 +216,17 @@ def collisiondetect():
 	while GPIO.input(ECHO) == 1:
 		pass
 	stop = time.time()
+		
 	duration = stop - start
 	distance = duration * 17150
 	rdist = round(distance, 2)
-	return  rdist
-
-
-	#print "Closest Detectable Ojbect Distance:", rdist, "CM"
+	print "Closest Detectable Ojbect Distance:", rdist, "CM"
 	#infinatly avoid objects
-	#if  rdist > 30:
-	#	fwd(0.1)
-	#elif rdist <= 30:
-	#	rev(0.2)
-	#	pivotleft(0.3)	
+	if  rdist > 30:
+		fwd(0.1)
+	elif rdist <= 30:
+		rev(0.2)
+		pivotleft(0.3)	
 
 #Xbox controller override
 #def controller():
@@ -250,14 +243,7 @@ def optionselect():
 	selection = input("Select Mode: ")
 	if selection == 1:
 		while True:
-			detectdistance = collisiondetect()
-			print("Avoiding Collision...")
-			print "Closest Detectable Object Is:", detectdistance, "CM" 
-			if detectdistance > 30:
-				fwd(0.1)
-			elif detectdistance <= 30:
-				rev(0.2)
-				pivotright(0.3)
+			collisiondetect()
 	elif selection == 2:
 		print("Rear Wheel Drive Inclusive Enabled")
 		skid(10)
