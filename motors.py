@@ -27,7 +27,7 @@ ECHO = 3
 GPIO.setup(TRIG, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN)
 GPIO.output(TRIG, False) #Disable Transmitter
-time.sleep(0.1)
+#time.sleep(0.1)
 
 #Movment And Functions
 def fwd(i):
@@ -127,6 +127,24 @@ def skid(i):
 	GPIO.output(17, False) #B/R REV	
 	time.sleep(i)
 
+#Ultrasonic Collision Avoidance Measuring Distance
+def collisiondetect():
+	#Send and recvice pulse
+	GPIO.output(TRIG, True)
+	time.sleep(0.00001)
+	GPIO.output(TRIG, False)
+	#convert input to a centimere distance
+	while GPIO.input(ECHO) == 0:
+		pass
+	start = time.time()
+	while GPIO.input(ECHO) == 1:
+		pass
+	stop = time.time()
+	duration = stop - start
+	distance = duration * 17150
+	rdist = round(distance, 2)
+	return rdist
+
 #Arrow Pad Control Of Robot
 #First RC Function Test
 def keypad():
@@ -137,6 +155,7 @@ def keypad():
 	#screen.nodelay(1)
 	curses.halfdelay(5)
 	screen.keypad(True)
+	#Collision detection control variable
 	collisionstate = 'ON'
 	#Option Read Out
 	screen.addstr("Use The Arrow Keys To Control Robot\n")
@@ -146,17 +165,18 @@ def keypad():
 	screen.addstr("Current Command: ")
 	while True:
 		char = screen.getch()
-		#Ultrasonic colission avoidance test
+		#Ultrasonic colission avoidance implementation
 		collisionavoidance = collisiondetect()
 		#control structure
-		if collisionavoidance <= 30 and collisionstate == 'ON':
+		if collisionavoidance <= 15 and collisionstate == 'ON':
 			screen.addstr(3,0, '>> Avoiding Collision!!')
+			stop(0.1)
 			rev(0.2)
-		elif char == ord('e'):
-			screen.addstr(3,0, '>> Collision Avoidance Enabled')
+		elif char == ord('e') and collisionstate == 'OFF':
+			screen.addstr(4,0, '>> Collision Avoidance Enabled')
 			collisionstate = 'ON'
-		elif char == ord('d'):
-			screen.addstr(3,0, '>> Warning Collision Avoidance Disabled')
+		elif char == ord('e') and collisionstate == 'ON':
+			screen.addstr(4,0, '>> Warning Collision Avoidance Disabled')
 			collisionstate = 'OFF'	
 		#return to main menu 
 		elif char == ord('q'):
@@ -166,13 +186,13 @@ def keypad():
 			optionselect()
 			break
 		#Keyboard keybinds
-		elif char == ord('k'):
+		elif char == curses.KEY_UP:
 			screen.addstr(3,0,'>> Skids!!')
 			skid(0.01)
-		elif char == ord('d'):
+		elif char == curses.KEY_RIGHT:
 			screen.addstr(3,0,'>> Right\n')
 			turnRIGHT(0.01)
-		elif char == ord('a'):
+		elif char == curses.KEY_LEFT:
 			screen.addstr(3,0,'>> Left\n')
 			turnLEFT(0.01)
 		elif char == ord('w'):
@@ -181,10 +201,10 @@ def keypad():
 		elif char == ord('s'):
 			screen.addstr(3,0,'>> Reverse\n')
 			rev(0.01)
-		elif char == ord('j'):
+		elif char == ord('a'):
 			screen.addstr(3,0,'>> Left Pivot\n')
 			pivotleft(0.01)
-		elif char == ord('l'):
+		elif char == ord('d'):
 			screen.addstr(3,0,'>> Right Pivot\n')
 			pivotright(0.01)
 		elif char == curses.ERR:
@@ -207,33 +227,6 @@ def detectmenu():
 	elif USRINPT == 3:
 		os.system('clear')
 		optionselect()
-
-#Ultrasonic Collision Avoidance Measuring Distance
-def collisiondetect():
-	#Send and recvice pulse
-	GPIO.output(TRIG, True)
-	time.sleep(0.00001)
-	GPIO.output(TRIG, False)
-	#convert input to a centimere distance
-	while GPIO.input(ECHO) == 0:
-		pass
-	start = time.time()
-	while GPIO.input(ECHO) == 1:
-		pass
-	stop = time.time()
-	duration = stop - start
-	distance = duration * 17150
-	rdist = round(distance, 2)
-	return  rdist
-
-
-	#print "Closest Detectable Ojbect Distance:", rdist, "CM"
-	#infinatly avoid objects
-	#if  rdist > 30:
-	#	fwd(0.1)
-	#elif rdist <= 30:
-	#	rev(0.2)
-	#	pivotleft(0.3)	
 
 #Xbox controller override
 #def controller():
