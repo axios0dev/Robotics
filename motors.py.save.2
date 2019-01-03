@@ -240,46 +240,34 @@ def detectmenu():
 def controller():
 	#Initialize controller
 	joy = xbox.Joystick()
-	#Collision Avoidance
-        collisionrange = 25
-        colstate = 1
 	#Trigger Setup 
-	while True:
-		#collisionrange = 25
-		collisiondist = collisiondetect()
-		Ltrigger = joy.leftTrigger() 
-		Rtrigger = joy.rightTrigger()
+	Ltrigger = joy.leftTrigger() 
+	Rtrigger = joy.rightTrigger()
 	#Joystrick Setup
-		(lx,ly) = joy.leftStick()
-		(rx,ry) = joy.rightStick()
+	(lx,ly) = joy.leftStick()
+	(rx,ry) = joy.rightStick()
 	#Info Screen
-		#print("Xbox 360 Controll Active")
+	print("Xbox 360 Controll Active")
+	while True:
 		#Control Scheme Tree
-		#if collisiondist < collisionrange and colstate == 1:
-			#rev(0.2)
-		if Rtrigger == 1.0:
+		if Ltrigger > 0:
+			rev(0.1)
+		elif Rtrigger > 0:
 			fwd(0.1)
-		elif lx < -0.4:
-			turnLEFT(0.1)
-		elif lx > 0.4:
-			turnRIGHT(0.1)
-		elif rx < -0.4:
+		elif lx < 0:
+			turnLeft(0.1)
+		elif lx > 0:
+			turnRight(0.1)
+		elif rx < 0:
 			pivotleft(0.1)
-		elif rx > 0.4:
+		elif ry > 0:
 			pivotright(0.1)
-		elif joy.A():
+		elif joy.A() and Ltrigger > 0:
 			skid(0.1)
-		elif joy.B():
-			joy.close()
-			optionselect()
-		elif joy.Y() and colstate == 1:
-				colstate = 0
-		elif joy.Y() and colsate == 0:
-				colstate = 1
-		elif Ltrigger == 1.0:
-                        rev(0.1)
-		else:
-			stop(0.1)
+
+def contclean():
+	joy = xbox.Joystick()
+	joy.close()
 
 #Main Mode Select Menu
 def optionselect():
@@ -306,13 +294,14 @@ def optionselect():
 	elif selection == 5:
 		print("Cutting Power To All Motors...")
 		stop(1)
+		joy.close()
 		os.system('clear')
 		optionselect()
 	elif selection == 3:
 		print("Control Robot With Arrow Pad And A,S,D")
 		keypad()
 	elif selection == 0:
-		contclean()
+		defcontclean()
 		fwd(0.5)
 		turnRIGHT(0.2)
 		fwd(0.5)
