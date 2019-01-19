@@ -292,6 +292,8 @@ def controller():
 	#Collision Avoidance
         collisionrange = 25
         colstate = 1
+	#Rolling Burnout Control Variable
+	RBMode = 0
 	#Trigger Setup 
 	while True:
 		Lcollisiondist = leftcollisiondetect()
@@ -304,7 +306,21 @@ def controller():
 	#Info Screen
 		#print("Xbox 360 Controll Active")
 		#Control Scheme Tree
-		if Lcollisiondist < collisionrange and colstate == 1:
+		 #Close Down Safley
+                if joy.Back():
+                        joy.close()
+                        optionselect()
+		#Collision Detection Features
+		elif joy.Y():
+                        if colstate == 1:
+                                colstate = 0
+                                print("Collision Avoidance System Offline")
+                                time.sleep(1)
+                        elif colstate == 0:
+                                colstate = 1
+                                print("Collision Avoidance System Online")
+                                time.sleep(1)
+		elif Lcollisiondist < collisionrange and colstate == 1:
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
@@ -312,58 +328,77 @@ def controller():
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
+		#Rolling Burnout Mode
+		elif joy.leftBumper():
+			if RBMode == 0:
+				RBMode = 1
+				print("Rolling Burnout Mode Engaged")
+				time.sleep(1)
+			elif RBMode == 1:
+				RBMode = 0
+				print("Rolling Burnout Mode Disabled")
+				time.sleep(1)
+		#Left ThumbStick X-Axis Turning
 		elif lx < -0.4:
 			frontspeed(100)
 			backspeed(100)
 			turnLEFT(0.1)
+			fwd(0.01)
 		elif lx > 0.4:
 			frontspeed(100)
 			backspeed(100)
 			turnRIGHT(0.1)
-		elif rx < -0.4:
+			fwd(0.01)
+		#Right ThumbStick X-Axis Pivoting (2 Speed)
+		elif rx <= -0.6 and rx >= -1.0:
 			frontspeed(100)
 			backspeed(100)
 			pivotleft(0.1)
-		elif rx > 0.4:
+		elif rx <= -0.2 and rx >= -0.6:
+			frontspeed(50)
+			backspeed(50)
+			pivotleft(0.1)
+		elif rx >= 0.2 and rx <= 0.6:
+			frontspeed(50)
+			backspeed(50)
+			pivotright(0.1)
+		elif rx > 0.6 and rx <= 1.0:
 			frontspeed(100)
 			backspeed(100)
 			pivotright(0.1)
+		#Skid 
 		elif joy.A():
 			frontspeed(0)
 			backspeed(100)
 			skid(0.1)
-		elif joy.B():
-			joy.close()
-			optionselect()
-		elif joy.Y():
-			if colstate == 1:
-				colstate = 0
-				print("colstate off")
-				time.sleep(1)
-			elif colstate == 0:
-				colstate = 1
-				print("colstate on")
-				time.sleep(1)
-		elif Ltrigger == 1.0:
+		#Reverse Trigger (2 Speed)
+		elif Ltrigger > 0 and Ltrigger <= 0.50:
+			frontspeed(50)
+			backspeed(50)
+                        rev(0.1)
+		elif Ltrigger > 0.50 and Ltrigger <= 1.0:
 			frontspeed(100)
 			backspeed(100)
-                        rev(0.1)
-		elif Rtrigger > 0 and Rtrigger <= 0.25:
-			frontspeed(25)
-			backspeed(25)
-			fwd(0.1)
-		elif Rtrigger > 0.25 and Rtrigger <= 0.50:
+			rev(0.1)
+		#Accelerate Trigger (2 Speed Setup)-  non Rolling Burnout
+		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 0:
 			frontspeed(50)
 			backspeed(50)
 			fwd(0.1)
-		elif Rtrigger > 0.50 and Rtrigger <= 0.75:
-			frontspeed(75)
-			backspeed(75)
-			fwd(0.1)
-		elif Rtrigger == 1.0:
+		elif Rtrigger > 0.50 and Rtrigger <= 1.0 and RBMode == 0:
 			frontspeed(100)
 			backspeed(100)
+			fwd(0.1)
+		#Accelerate Trigger Rolling Burnout
+		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 1:
+                        frontspeed(15)
+                        backspeed(50)
                         fwd(0.1)
+                elif Rtrigger > 0.50 and Rtrigger <= 1.0 and RBMode == 1:
+                        frontspeed(15)
+                        backspeed(100)
+                        fwd(0.1)
+
 		else:
 			stop(0.1)
 
