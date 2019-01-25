@@ -52,6 +52,100 @@ FRM_pwm.start(0)
 BLM_pwm.start(0)
 BRM_pwm.start(0)
 
+#RBG Headlight Pin Setup
+GPIO.setup(26,GPIO.OUT) #RED
+GPIO.setup(13,GPIO.OUT) #GREEN
+GPIO.setup(19,GPIO.OUT) #BLUE
+
+#RGB Headlight Colours
+#RGB  COLOUR FUNCTIONS/COMBINATIONS
+def redLED(state):
+	if (state == "ON"):
+		GPIO.output(26, True)
+	elif (state == "OFF"):
+		GPIO.output(26, False)
+def greenLED(state):
+	if (state == "ON"):
+		GPIO.output(13, True)
+	elif (state == "OFF"):
+		GPIO.output(13,False)
+def blueLED(state):
+	if (state == "ON"):
+		GPIO.output(19, True)
+	elif (state == "OFF"):
+		GPIO.output(19, False)
+def yellowLED(state):
+	if (state == "ON"):
+		redLED("ON")
+		greenLED("ON")
+	elif (state == "OFF"):
+		redLED("OFF")
+		greenLED("OFF")
+def cyanLED(state):
+	if (state == "ON"):
+		greenLED("ON")
+		blueLED("ON")
+	elif (state == "OFF"):
+		greenLED("OFF")
+		blueLED("OFF")
+def magLED(state):
+	if (state == "ON"):
+		redLED("ON")
+		blueLED("ON")
+	elif (state == "OFF"):
+        	redLED("OFF")
+                blueLED("OFF")
+def whiteLED(state):
+	if (state == "ON"):
+		redLED("ON")
+                blueLED("ON")
+		greenLED("ON")
+	elif (state == "OFF"):
+                redLED("OFF")
+                blueLED("OFF")
+		greenLED("OFF")
+def orangeLED(state):
+	if (state == "ON"):
+                redLED("ON")
+                yellowLED("ON")
+        elif (state == "OFF"):
+                redLED("OFF")
+                yellowLED("OFF")
+
+def RGBcolorcycle(selection):
+	if selection == 1:
+		orangeLED("OFF")
+		greenLED("OFF")
+		redLED("ON")
+	elif selection == 2:
+		redLED("OFF")
+		blueLED("OFF")
+		greenLED("ON")
+	elif selection == 3:
+		greenLED("OFF")
+		yellowLED("OFF")
+		blueLED("ON")
+	elif selection == 4:
+		blueLED("OFF")
+		cyanLED("OFF")
+		yellowLED("ON")
+	elif selection == 5:
+		yellowLED("OFF")
+		magLED("OFF")
+		cyanLED("ON")
+	elif selection == 6:
+		cyanLED("OFF")
+		whiteLED("OFF")
+		magLED("ON")
+	elif selection == 7:
+		magLED("OFF")
+		orangeLED("OFF")
+		whiteLED("ON")
+	elif selection == 8:
+		whiteLED("OFF")
+		redLED("OFF")
+		orangeLED("ON")
+
 #Movment And Functions
 def fwd(i):
 	#Front
@@ -291,9 +385,14 @@ def controller():
 	joy = xbox.Joystick()
 	#Collision Avoidance
         collisionrange = 25
-        colstate = 1
+        colstate = 0
 	#Rolling Burnout Control Variable
 	RBMode = 0
+	#Collsion Avoidance variable control
+	colavd = 0
+	#RGB Headlight Control Varaible
+	RGB = 0
+	select = 0
 	#Trigger Setup 
 	while True:
 		Lcollisiondist = leftcollisiondetect()
@@ -309,7 +408,10 @@ def controller():
 		 #Close Down Safley
                 if joy.Back():
                         joy.close()
-                        optionselect()
+			redLED("OFF")
+                       	greenLED("OFF")
+                        blueLED("OFF")
+			optionselect()
 		#Collision Detection Features
 		elif joy.Y():
                         if colstate == 1:
@@ -329,7 +431,7 @@ def controller():
 			backspeed(100)
 			rev(0.2)
 		#Rolling Burnout Mode
-		elif joy.leftBumper():
+		elif joy.Guide():
 			if RBMode == 0:
 				RBMode = 1
 				print("Rolling Burnout Mode Engaged")
@@ -391,17 +493,85 @@ def controller():
 			fwd(0.1)
 		#Accelerate Trigger Rolling Burnout
 		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 1:
-                        frontspeed(15)
+                        frontspeed(5)
                         backspeed(50)
                         fwd(0.1)
                 elif Rtrigger > 0.50 and Rtrigger <= 1.0 and RBMode == 1:
-                        frontspeed(15)
+                        frontspeed(5)
                         backspeed(100)
                         fwd(0.1)
-
+		elif joy.leftBumper() and colavd == 0:
+			colavd = 1
+			time.sleep(0.5)
+			#Entrapment detect Variables
+               	 	leftcount = 0
+               		rightcount = 0
+                	obsdist = 30
+                	while colavd == 1:
+                        	Ldetectdistance = leftcollisiondetect()
+                        	Rdetectdistance = rightcollisiondetect()
+                        	#Infinitely avoid collision desicison tree
+				#Disable Collision Avoidance Demo
+				if joy.leftBumper() and colavd == 1:
+                                        colavd = 0
+                                        stop(0.1)
+				#If entrament is detected reverse and turn 180 degress
+                        	elif leftcount  == 2:
+                               		leftcount = 0
+                               		rev(0.2)
+                                	pivotright(0.6)
+                       		elif rightcount == 2:
+                               		rightcount = 0
+                               		rev(0.2)
+                                	pivotleft(0.6)
+                         	elif Rdetectdistance <= obsdist:
+                                	leftcount = 0
+                                	rightcount += 1
+                                	rev(0.2)
+                                	pivotright(0.3)
+                       		elif Ldetectdistance <= obsdist:
+                                	rightcount = 0
+                                	leftcount += 1
+                                	rev(0.2)
+                                	pivotleft(0.3)
+                       		else:
+                               	 	fwd(0.1)
+		#RGB Headlight Dpad Integration
+		elif joy.dpadUp():
+			if RGB == 0:
+				RGB = 1
+				select = 1
+				RGBcolorcycle(select)
+				time.sleep(1)
+			elif RGB == 1:
+				RGB = 0
+				redLED("OFF")
+				greenLED("OFF")
+				blueLED("OFF")
+				time.sleep(1)
+		#Cycle Back Through colours
+		elif joy.dpadLeft():
+			if select > 1:
+				select -= 1
+				RGBcolorcycle(select)
+				time.sleep(1)
+			elif select == 1:
+				select = 8
+				RGBcolorcycle(select)
+				time.sleep(1)
+		#Cycle Through colours
+		elif joy.dpadRight():
+			if select < 8:
+				select += 1
+				RGBcolorcycle(select)
+				time.sleep(1)
+			elif select == 8:
+				select = 1
+				RGBcolorcycle(select)
+				time.sleep(1)			
+		#Default Case For No Current Input
 		else:
 			stop(0.1)
-
 #Main Mode Select Menu
 def optionselect():
 	print("Robotic Rover Option Menu Selection")
@@ -425,7 +595,7 @@ def optionselect():
 			print "Right Sensor Distance:", Rdetectdistance, "CM"
 			print "leftcount  :", leftcount
 			print "rightcount : ", rightcount
-			os.system('clear')
+			#os.system('clear')
 			#Infinitely avoid collision desicison tree
 			#If entrament is detected reverse and turn 180 degress 
 			if leftcount  == 3:
