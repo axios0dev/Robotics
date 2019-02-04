@@ -5,6 +5,7 @@ import time
 import curses
 import os
 import xbox
+import socket
 from picamera import PiCamera
 from datetime import datetime
 GPIO.setmode(GPIO.BCM)
@@ -61,9 +62,15 @@ GPIO.setup(19,GPIO.OUT) #BLUE
 
 #Camera Setup
 camera = PiCamera()
-camera.resolution = (1280,720)
-camera.framerate = (25)
+camera.resolution = (640,480)
+camera.framerate = (24)
 time.sleep(1)
+
+#Streaming Socket Server Setup
+server_socket = socket.socket()
+server_socket.bind(('0.0.0.0', 8000))
+server_socket.listen(0)
+connection = server_socket.accept()[0].makefile('wb')
 
 #RGB Headlight Colours
 #RGB  COLOUR FUNCTIONS/COMBINATIONS
@@ -122,34 +129,43 @@ def orangeLED(state):
 
 #Program To Cycle RGB Headlight Colours On 360 Controller D-Pad
 def RGBcolorcycle(selection):
+	#All Led States Account For Both The Next And Prevous Led Colour And Disables Them
+	#Red Led
 	if selection == 1:
 		orangeLED("OFF")
 		greenLED("OFF")
 		redLED("ON")
+	#Green Led
 	elif selection == 2:
 		redLED("OFF")
 		blueLED("OFF")
 		greenLED("ON")
+	#Blue Led
 	elif selection == 3:
 		greenLED("OFF")
 		yellowLED("OFF")
 		blueLED("ON")
+	#Yellow Led
 	elif selection == 4:
 		blueLED("OFF")
 		cyanLED("OFF")
 		yellowLED("ON")
+	#Cyan Led
 	elif selection == 5:
 		yellowLED("OFF")
 		magLED("OFF")
 		cyanLED("ON")
+	#Magenta Led
 	elif selection == 6:
 		cyanLED("OFF")
 		whiteLED("OFF")
 		magLED("ON")
+	#White Led
 	elif selection == 7:
 		magLED("OFF")
 		orangeLED("OFF")
 		whiteLED("ON")
+	#Orange Led
 	elif selection == 8:
 		whiteLED("OFF")
 		redLED("OFF")
@@ -436,7 +452,6 @@ def controller():
 	hbrake = 0
 	#Camera Recording Control Variabl
 	rec = 0
-
 	#Trigger Setup 
 	while True:
 	#Auto Refresh Value Store Varaibles
@@ -454,21 +469,24 @@ def controller():
                 if joy.Back():
                         joy.close()
 			#camera.stop_recording()
+			#Headlights Off
 			redLED("OFF")
                        	greenLED("OFF")
                         blueLED("OFF")
+			#Close Streaming Socket Server
+			server_socket.close()
+			#Main Menu Loop Back
 			optionselect()
 		#Camera Recording Activation/Deactivation
 		elif joy.Start():
 			if rec == 0:
 				rec = 1
 				time.sleep(1)
-				print("Camera Active")
-				moment = datetime.now()
-				camera.start_recording('/home/pi/Videos/RobotVision_%02d_%02d_%02d.h264' % (moment.hour, moment.minute, moment.second))
+				print("Robot Vision Server Active")
+				camera.start_recording(connection, format='h264')						
 			elif rec == 1:
 				rec = 0
-				print("Camera Disabled")
+				print("Robot Vision Server Disabled")
 				camera.stop_recording()
 				time.sleep(1)
 		#Collision Detection Features
@@ -538,7 +556,7 @@ def controller():
 				print("Handbreak OFF")
 				time.sleep(1)
 		#4 Speed Skid Mode (HandBreak ON)
-		elif Rtrigger > 0 and Rtrigger <= 0.25 and hbrake == 1:
+		elif Rtrigger > 0.5 and Rtrigger <= 0.25 and hbrake == 1:
 			frontspeed(0)
 			backspeed(25)
 			fwd(0.1)
@@ -555,7 +573,7 @@ def controller():
                         backspeed(100)
                         fwd(0.1)
 		#Reverse Trigger (2 Speed)
-		elif Ltrigger > 0 and Ltrigger <= 0.50:
+		elif Ltrigger > 0.5 and Ltrigger <= 0.50:
 			frontspeed(30)
 			backspeed(30)
                         rev(0.1)
@@ -564,7 +582,7 @@ def controller():
 			backspeed(100)
 			rev(0.1)
 		#Accelerate Trigger (2 Speed Setup)-  non Rolling Burnout
-		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 0:
+		elif Rtrigger > 0.5 and Rtrigger <= 0.50 and RBMode == 0:
 			frontspeed(30)
 			backspeed(30)
 			fwd(0.1)
@@ -573,7 +591,7 @@ def controller():
 			backspeed(100)
 			fwd(0.1)
 		#Accelerate Trigger Rolling Burnout
-		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 1:
+		elif Rtrigger > 0.5 and Rtrigger <= 0.50 and RBMode == 1:
                         frontspeed(5)
                         backspeed(50)
                         fwd(0.1)
