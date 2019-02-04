@@ -1,10 +1,12 @@
 #Author Elliott Tiver
-#Flinders Uinvierty Information Technology Student
+#Flinders Univiersty Information Technology Student
 import RPi.GPIO as GPIO
 import time
 import curses
 import os
 import xbox
+from picamera import PiCamera
+from datetime import datetime
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -56,6 +58,12 @@ BRM_pwm.start(0)
 GPIO.setup(26,GPIO.OUT) #RED
 GPIO.setup(13,GPIO.OUT) #GREEN
 GPIO.setup(19,GPIO.OUT) #BLUE
+
+#Camera Setup
+camera = PiCamera()
+camera.resolution = (1280,720)
+camera.framerate = (25)
+time.sleep(1)
 
 #RGB Headlight Colours
 #RGB  COLOUR FUNCTIONS/COMBINATIONS
@@ -112,6 +120,7 @@ def orangeLED(state):
                 redLED("OFF")
                 yellowLED("OFF")
 
+#Program To Cycle RGB Headlight Colours On 360 Controller D-Pad
 def RGBcolorcycle(selection):
 	if selection == 1:
 		orangeLED("OFF")
@@ -288,6 +297,36 @@ def rightcollisiondetect():
 	rdist = round(distance, 2)
 	return rdist
 
+def autodetectAI():
+	 #Entrapment detect Variables
+         leftcount = 0
+         rightcount = 0
+         obsdist = 25
+	 while True:
+         	Ldetectdistance = leftcollisiondetect()
+         	Rdetectdistance = rightcollisiondetect()
+         	#Infinitely avoid collision desicison tree
+         	#If entrament is detected reverse and turn 180 degress
+         	if leftcount  == 2:
+                	leftcount = 0
+                        rev(0.2)
+                       	pivotleft(0.6)
+           	elif rightcount == 2:
+                        rightcount = 0
+                        rev(0.2)
+                        pivotright(0.6)
+            	elif Rdetectdistance <= obsdist:
+                        leftcount = 0
+                        rightcount += 1
+                        rev(0.2)
+                        pivotright(0.3)
+          	elif Ldetectdistance <= obsdist:
+                       	rightcount = 0
+                        leftcount += 1
+                        rev(0.2)
+                       	pivotleft(0.3)
+           	else:
+                       	fwd(0.1)	
 #Arrow Pad Control of Robot
 #First RC Function Test
 def keypad():
@@ -384,7 +423,7 @@ def controller():
 	#Initialize controller
 	joy = xbox.Joystick()
 	#Collision Avoidance
-        collisionrange = 25
+        collisionrange = 15
         colstate = 0
 	#Rolling Burnout Control Variable
 	RBMode = 0
@@ -393,8 +432,14 @@ def controller():
 	#RGB Headlight Control Varaible
 	RGB = 0
 	select = 0
+	#Handbreak Control Variable
+	hbrake = 0
+	#Camera Recording Control Variabl
+	rec = 0
+
 	#Trigger Setup 
 	while True:
+	#Auto Refresh Value Store Varaibles
 		Lcollisiondist = leftcollisiondetect()
 		Rcollisiondist = rightcollisiondetect()
 		Ltrigger = joy.leftTrigger() 
@@ -403,15 +448,29 @@ def controller():
 		(lx,ly) = joy.leftStick()
 		(rx,ry) = joy.rightStick()
 	#Info Screen
-		#print("Xbox 360 Controll Active")
+		#print("Xbox 360 Controller Active")
 		#Control Scheme Tree
-		 #Close Down Safley
+		#Close Down Safley
                 if joy.Back():
                         joy.close()
+			#camera.stop_recording()
 			redLED("OFF")
                        	greenLED("OFF")
                         blueLED("OFF")
 			optionselect()
+		#Camera Recording Activation/Deactivation
+		elif joy.Start():
+			if rec == 0:
+				rec = 1
+				time.sleep(1)
+				print("Camera Active")
+				moment = datetime.now()
+				camera.start_recording('/home/pi/Videos/RobotVision_%02d_%02d_%02d.h264' % (moment.hour, moment.minute, moment.second))
+			elif rec == 1:
+				rec = 0
+				print("Camera Disabled")
+				camera.stop_recording()
+				time.sleep(1)
 		#Collision Detection Features
 		elif joy.Y():
                         if colstate == 1:
@@ -468,15 +527,37 @@ def controller():
 			frontspeed(100)
 			backspeed(100)
 			pivotright(0.1)
-		#Skid 
+		#Skid Mode Handbreak Enable/Disable 
 		elif joy.A():
+			if hbrake == 0:
+				hbrake = 1
+				print("HandBreak ON")
+				time.sleep(1)
+			elif hbrake == 1:
+				hbrake = 0
+				print("Handbreak OFF")
+				time.sleep(1)
+		#4 Speed Skid Mode (HandBreak ON)
+		elif Rtrigger > 0 and Rtrigger <= 0.25 and hbrake == 1:
 			frontspeed(0)
-			backspeed(100)
-			skid(0.1)
+			backspeed(25)
+			fwd(0.1)
+		elif Rtrigger > 0.25 and Rtrigger <= 0.50 and hbrake == 1:
+                        frontspeed(0)
+                        backspeed(50)
+                        fwd(0.1)
+		elif Rtrigger > 0.50 and Rtrigger <= 0.75 and hbrake == 1:
+                        frontspeed(0)
+                        backspeed(75)
+                        fwd(0.1)
+		elif Rtrigger > 0.75 and Rtrigger <= 1.0 and hbrake == 1:
+                        frontspeed(0)
+                        backspeed(100)
+                        fwd(0.1)
 		#Reverse Trigger (2 Speed)
 		elif Ltrigger > 0 and Ltrigger <= 0.50:
-			frontspeed(50)
-			backspeed(50)
+			frontspeed(30)
+			backspeed(30)
                         rev(0.1)
 		elif Ltrigger > 0.50 and Ltrigger <= 1.0:
 			frontspeed(100)
@@ -484,8 +565,8 @@ def controller():
 			rev(0.1)
 		#Accelerate Trigger (2 Speed Setup)-  non Rolling Burnout
 		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 0:
-			frontspeed(50)
-			backspeed(50)
+			frontspeed(30)
+			backspeed(30)
 			fwd(0.1)
 		elif Rtrigger > 0.50 and Rtrigger <= 1.0 and RBMode == 0:
 			frontspeed(100)
@@ -500,43 +581,55 @@ def controller():
                         frontspeed(5)
                         backspeed(100)
                         fwd(0.1)
-		elif joy.leftBumper() and colavd == 0:
-			colavd = 1
-			time.sleep(0.5)
-			#Entrapment detect Variables
-               	 	leftcount = 0
-               		rightcount = 0
-                	obsdist = 30
-                	while colavd == 1:
-                        	Ldetectdistance = leftcollisiondetect()
-                        	Rdetectdistance = rightcollisiondetect()
-                        	#Infinitely avoid collision desicison tree
-				#Disable Collision Avoidance Demo
-				if joy.leftBumper() and colavd == 1:
-                                        colavd = 0
-                                        stop(0.1)
-				#If entrament is detected reverse and turn 180 degress
-                        	elif leftcount  == 2:
-                               		leftcount = 0
-                               		rev(0.2)
-                                	pivotright(0.6)
-                       		elif rightcount == 2:
-                               		rightcount = 0
-                               		rev(0.2)
-                                	pivotleft(0.6)
-                         	elif Rdetectdistance <= obsdist:
-                                	leftcount = 0
-                                	rightcount += 1
-                                	rev(0.2)
-                                	pivotright(0.3)
-                       		elif Ldetectdistance <= obsdist:
-                                	rightcount = 0
-                                	leftcount += 1
-                                	rev(0.2)
-                                	pivotleft(0.3)
-                       		else:
-                               	 	fwd(0.1)
-		#RGB Headlight Dpad Integration
+		elif joy.leftBumper():
+			if colavd == 0:
+				colavd = 1
+				time.sleep(1)
+				#Entrapment detect Variables
+         			leftcount = 0
+         			rightcount = 0
+         			obsdist = 25
+         			while colavd == 1:
+                			Ldetectdistance = leftcollisiondetect()
+                			Rdetectdistance = rightcollisiondetect()
+                			#Infinitely avoid collision desicison tree
+                			#If entrament is detected reverse and turn 180 degress
+					if joy.leftBumper():
+						stop(0.1)
+						colavd = 0
+						time.sleep(1)
+                			elif leftcount  == 2:
+						frontspeed(100)
+						backspeed(100)
+                        			leftcount = 0
+                        			rev(0.2)
+                        			pivotleft(0.6)
+                			elif rightcount == 2:
+						frontspeed(100)
+						backspeed(100)
+                        			rightcount = 0
+                        			rev(0.2)
+                        			pivotright(0.6)
+                			elif Rdetectdistance <= obsdist:
+						frontspeed(50)
+						backspeed(50)
+                        			leftcount = 0
+                        			rightcount += 1
+                        			rev(0.2)
+                        			pivotright(0.3)
+                			elif Ldetectdistance <= obsdist:
+						frontspeed(50)
+						backspeed(50)
+                        			rightcount = 0
+                        			leftcount += 1
+                        			rev(0.2)
+                        			pivotleft(0.3)
+                			else:
+						frontspeed(100)
+						backspeed(100)
+                        			fwd(0.1)
+	 
+                #RGB Headlight Dpad Integration
 		elif joy.dpadUp():
 			if RGB == 0:
 				RGB = 1
