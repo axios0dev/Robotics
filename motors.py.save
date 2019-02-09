@@ -5,7 +5,6 @@ import time
 import curses
 import os
 import xbox
-import socket
 from picamera import PiCamera
 from datetime import datetime
 GPIO.setmode(GPIO.BCM)
@@ -30,16 +29,13 @@ LTRIG = 20
 LECHO = 21 
 GPIO.setup(LTRIG, GPIO.OUT)
 GPIO.setup(LECHO, GPIO.IN)
-GPIO.output(LTRIG, False)
-time.sleep(1) 
-
+GPIO.output(LTRIG, False) #Disable Transmitter
 #Right Ultrasonic sensor
 RTRIG = 2
 RECHO = 3
 GPIO.setup(RTRIG, GPIO.OUT)
 GPIO.setup(RECHO, GPIO.IN)
 GPIO.output(RTRIG, False)
-time.sleep(1)
 
 #PWM Speed Control Setup
 #Pin Setup
@@ -65,50 +61,9 @@ GPIO.setup(19,GPIO.OUT) #BLUE
 
 #Camera Setup
 camera = PiCamera()
-camera.resolution = (640,480)
-camera.framerate = (24)
+camera.resolution = (1280,720)
+camera.framerate = (25)
 time.sleep(1)
-
-#Streaming Socket Server Setup
-#server_socket = socket.socket()
-#server_socket.bind(('0.0.0.0', 8000))
-#server_socket.listen(0)
-#connection = server_socket.accept()[0].makefile('wb')
-
-#Ultrasonic Collision Avoidance Measuring Distance
-def leftcollisiondetect():
-        #Send and recvice pulse
-        GPIO.output(LTRIG, True)
-        time.sleep(0.00001)
-        GPIO.output(LTRIG, False)
-        #convert input to a centimere distance
-        while GPIO.input(LECHO) == 0:
-                pass
-        start = time.time()
-        while GPIO.input(LECHO) == 1:
-                pass
-        stop = time.time()
-        duration = stop - start
-        distance = duration * 17150
-        rdist = round(distance, 2)
-        return rdist
-
-def rightcollisiondetect():
-        #Send recive pulse
-        GPIO.output(RTRIG, True)
-        time.sleep(0.00001)
-        GPIO.output(RTRIG, False)
-        #convert and return data
-        while GPIO.input(RECHO) == 0:
-                pass
-        start = time.time()
-        while GPIO.input(RECHO) == 1:
-                pass
-        stop = time.time()
-        duration = stop - start
-        distance = duration * 17150
-        rdist = round(distance, 2)
-        return rdist
 
 #RGB Headlight Colours
 #RGB  COLOUR FUNCTIONS/COMBINATIONS
@@ -167,43 +122,34 @@ def orangeLED(state):
 
 #Program To Cycle RGB Headlight Colours On 360 Controller D-Pad
 def RGBcolorcycle(selection):
-	#All Led States Account For Both The Next And Prevous Led Colour And Disables Them
-	#Red Led
 	if selection == 1:
 		orangeLED("OFF")
 		greenLED("OFF")
 		redLED("ON")
-	#Green Led
 	elif selection == 2:
 		redLED("OFF")
 		blueLED("OFF")
 		greenLED("ON")
-	#Blue Led
 	elif selection == 3:
 		greenLED("OFF")
 		yellowLED("OFF")
 		blueLED("ON")
-	#Yellow Led
 	elif selection == 4:
 		blueLED("OFF")
 		cyanLED("OFF")
 		yellowLED("ON")
-	#Cyan Led
 	elif selection == 5:
 		yellowLED("OFF")
 		magLED("OFF")
 		cyanLED("ON")
-	#Magenta Led
 	elif selection == 6:
 		cyanLED("OFF")
 		whiteLED("OFF")
 		magLED("ON")
-	#White Led
 	elif selection == 7:
 		magLED("OFF")
 		orangeLED("OFF")
 		whiteLED("ON")
-	#Orange Led
 	elif selection == 8:
 		whiteLED("OFF")
 		redLED("OFF")
@@ -316,14 +262,52 @@ def backspeed(i):
 	BLM_pwm.ChangeDutyCycle(i)
 	BRM_pwm.ChangeDutyCycle(i)
 
+#Ultrasonic Collision Avoidance Measuring Distance
+def collisiondetect():
+	#Send and recvice pulse
+	#Left Sensor
+	GPIO.output(LTRIG, True)
+	time.sleep(0.00001)
+	GPIO.output(LTRIG, False)
+	#Right Sensor
+	GPIO.output(RTRIG, True)  
+	time.sleep(0.00001)
+        GPIO.output(RTRIG, False)
+	#convert input to a centimere distance
+	#Left Sensor Measurment Pulse
+	while GPIO.input(LECHO) == 0:
+		pass
+	Lstart = time.time()
+	while GPIO.input(LECHO) == 1:
+		pass
+	Lstop = time.time()
+	#Right Sensor Measurment Pulse
+	while GPIO.input(RECHO) == 0:
+		pass
+	Rstart = time.time()
+	while GPIO.input(RECHO) == 1:
+		pass
+	Rstop = time.time()
+	#Left Sensor Measurment Conversion
+	Lduration = Lstop - Lstart
+	Ldistance = Lduration * 17150
+	Lrdist = round(Ldistance, 2)
+	#Right Sensor Measurment Conversion
+	Rduration = Rstop - Rstart
+	Rdistance = Rduration * 17150
+	Rrdist = round(Rdistance, 2)
+	#Multipule Return Value Tuple
+	coldist = (Lrdist, Rrdist)
+	return coldist
+
 def autodetectAI():
 	 #Entrapment detect Variables
          leftcount = 0
          rightcount = 0
          obsdist = 25
-	 while True: 
-         	Ldetectdistance = leftcollisiondetect()  
-         	Rdetectdistance = rightcollisiondetect() 
+	 while True:
+         	#Ldetectdistance = leftcollisiondetect()
+         	#Rdetectdistance = rightcollisiondetect()
          	#Infinitely avoid collision desicison tree
          	#If entrament is detected reverse and turn 180 degress
          	if leftcount  == 2:
@@ -369,8 +353,9 @@ def keypad():
 		offsetavoidance = 25
 		char = screen.getch()
 		#Ultrasonic colission avoidance implementation
-		leftcollisionavoidance = leftcollsiondetect()
-		rightcolavd = rightcollisiondetect()
+		collisionavoidance = collisiondetect()
+		leftcollisionavoidance = collisionavoidance[1]
+		rightcolavd = collisionavoidance[1]
 		#control structure
 		if leftcollisionavoidance <= offsetavoidance and rightcolavd <= offsetavoidance and collisionstate == 'ON':
 			screen.addstr(3,0, '>> Avoiding Collision!!')
@@ -455,11 +440,13 @@ def controller():
 	hbrake = 0
 	#Camera Recording Control Variabl
 	rec = 0
+
 	#Trigger Setup 
 	while True:
 	#Auto Refresh Value Store Varaibles
-		Lcollisiondist = leftcollisiondetect()
-		Rcollisiondist = rightcollisiondetect()
+		collisiondistances = collisiondetect()
+		LeftDist = collisiondistances[1]
+		RightDist = collisiondistances[1]
 		Ltrigger = joy.leftTrigger() 
 		Rtrigger = joy.rightTrigger()
 	#Joystrick Setup
@@ -471,26 +458,22 @@ def controller():
 		#Close Down Safley
                 if joy.Back():
                         joy.close()
-			#Redundant Camera Recording Shutoff
-			camera.stop_recording()
-			#Headlights Off
+			#camera.stop_recording()
 			redLED("OFF")
                        	greenLED("OFF")
                         blueLED("OFF")
-			#Close Streaming Socket Server
-			#server_socket.close()
-			#Main Menu Loop Back
 			optionselect()
 		#Camera Recording Activation/Deactivation
 		elif joy.Start():
 			if rec == 0:
 				rec = 1
 				time.sleep(1)
-				print("Robot Vision Server Active")
-				#camera.start_recording(connection, format='h264')						
+				print("Camera Active")
+				moment = datetime.now()
+				camera.start_recording('/home/pi/Videos/RobotVision_%02d_%02d_%02d.h264' % (moment.hour, moment.minute, moment.second))
 			elif rec == 1:
 				rec = 0
-				print("Robot Vision Server Disabled")
+				print("Camera Disabled")
 				camera.stop_recording()
 				time.sleep(1)
 		#Collision Detection Features
@@ -503,17 +486,15 @@ def controller():
                                 colstate = 1
                                 print("Collision Avoidance System Online")
                                 time.sleep(1)
-		elif colstate == 1 and Lcollisiondist < collisionrange:
+		elif LeftDist < collisionrange and colstate == 1:
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
-			print("Collision Detected On Left Sensor")
-		elif colstate == 1 and Rcollisiondist < collisionrange:
+		elif RightDist < collisionrange and colstate == 1:
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
-			print("Collision Detected On Right Sensor")
-		#Rolling Burnout Mode Toggle
+		#Rolling Burnout Mode
 		elif joy.Guide():
 			if RBMode == 0:
 				RBMode = 1
@@ -523,17 +504,6 @@ def controller():
 				RBMode = 0
 				print("Rolling Burnout Mode Disabled")
 				time.sleep(1)
-		#Rear Wheel Drive  Mode Handbreak Toggle
-                elif joy.A():
-                        if hbrake == 0:
-                                hbrake = 1
-                                print("HandBreak ON")
-                                time.sleep(1)
-                        elif hbrake == 1:
-                                hbrake = 0
-                                print("Handbreak OFF")
-                                time.sleep(1)
-		#Thumbsticks
 		#Left ThumbStick X-Axis Turning
 		elif lx < -0.4:
 			frontspeed(100)
@@ -562,61 +532,60 @@ def controller():
 			frontspeed(100)
 			backspeed(100)
 			pivotright(0.1)
-		#Triggers
-		#Accelerate Trigger 
-		#4 Speed Rear Wheel Drive Mode (HandBreak ON)
-		elif hbrake == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
+		#Skid Mode Handbreak Enable/Disable 
+		elif joy.A():
+			if hbrake == 0:
+				hbrake = 1
+				print("HandBreak ON")
+				time.sleep(1)
+			elif hbrake == 1:
+				hbrake = 0
+				print("Handbreak OFF")
+				time.sleep(1)
+		#4 Speed Skid Mode (HandBreak ON)
+		elif Rtrigger > 0 and Rtrigger <= 0.25 and hbrake == 1:
 			frontspeed(0)
 			backspeed(25)
 			fwd(0.1)
-		elif hbrake == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
+		elif Rtrigger > 0.25 and Rtrigger <= 0.50 and hbrake == 1:
                         frontspeed(0)
                         backspeed(50)
                         fwd(0.1)
-		elif hbrake == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
+		elif Rtrigger > 0.50 and Rtrigger <= 0.75 and hbrake == 1:
                         frontspeed(0)
                         backspeed(75)
                         fwd(0.1)
-		elif hbrake == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
+		elif Rtrigger > 0.75 and Rtrigger <= 1.0 and hbrake == 1:
                         frontspeed(0)
                         backspeed(100)
                         fwd(0.1)
-		#Rolling Burnout(4 speed)
-                elif RBMode == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
-                        frontspeed(10)
-                        backspeed(25)
-                        fwd(0.1)
-                elif RBMode == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
-                        frontspeed(10)
-                        backspeed(50)
-                        fwd(0.1)
-                elif RBMode == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
-                        frontspeed(10)
-                        backspeed(75)
-                        fwd(0.1)
-                elif RBMode == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
-                        frontspeed(10)
-                        backspeed(100)
-                        fwd(0.1)
-		#All Wheel Drive 2-Speed
-		elif Rtrigger > 0.1 and Rtrigger <= 0.50:
+		#Reverse Trigger (2 Speed)
+		elif Ltrigger > 0 and Ltrigger <= 0.50:
+			frontspeed(30)
+			backspeed(30)
+                        rev(0.1)
+		elif Ltrigger > 0.50 and Ltrigger <= 1.0:
+			frontspeed(100)
+			backspeed(100)
+			rev(0.1)
+		#Accelerate Trigger (2 Speed Setup)-  non Rolling Burnout
+		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 0:
 			frontspeed(30)
 			backspeed(30)
 			fwd(0.1)
-		elif Rtrigger > 0.50 and Rtrigger <= 1.0:
+		elif Rtrigger > 0.50 and Rtrigger <= 1.0 and RBMode == 0:
 			frontspeed(100)
 			backspeed(100)
 			fwd(0.1)
-		#Reverse 2-Speed
-                elif Ltrigger > 0.1 and Ltrigger <= 0.50:
-                        frontspeed(30)
-                        backspeed(30)
-                        rev(0.1)
-                elif Ltrigger > 0.50 and Ltrigger <= 1.0:
-                        frontspeed(100)
+		#Accelerate Trigger Rolling Burnout
+		elif Rtrigger > 0 and Rtrigger <= 0.50 and RBMode == 1:
+                        frontspeed(5)
+                        backspeed(50)
+                        fwd(0.1)
+                elif Rtrigger > 0.50 and Rtrigger <= 1.0 and RBMode == 1:
+                        frontspeed(5)
                         backspeed(100)
-                        rev(0.1)
-		#AI Auto Pilot Override
+                        fwd(0.1)
 		elif joy.leftBumper():
 			if colavd == 0:
 				colavd = 1
@@ -626,8 +595,9 @@ def controller():
          			rightcount = 0
          			obsdist = 25
          			while colavd == 1:
-                			Ldetectdistance = leftcollisiondetect()
-                			Rdetectdistance = rightcollisiondetect()
+                			detectdistance = collisiondetect()
+					Ldetectdistance = detectdistance[1]
+					Rdetectdistance = detectdistance[1]
                 			#Infinitely avoid collision desicison tree
                 			#If entrament is detected reverse and turn 180 degress
 					if joy.leftBumper():
@@ -664,6 +634,7 @@ def controller():
 						frontspeed(100)
 						backspeed(100)
                         			fwd(0.1)
+	 
                 #RGB Headlight Dpad Integration
 		elif joy.dpadUp():
 			if RGB == 0:
@@ -687,7 +658,7 @@ def controller():
 				select = 8
 				RGBcolorcycle(select)
 				time.sleep(1)
-		#Cycle Forward Through colours
+		#Cycle Through colours
 		elif joy.dpadRight():
 			if select < 8:
 				select += 1
@@ -716,8 +687,9 @@ def optionselect():
 		rightcount = 0
 		obsdist = 30
 		while True:
-			Ldetectdistance = leftcollisiondetect()
-			Rdetectdistance = rightcollisiondetect()
+			distances = collisiondetect()
+			Ldetectdistance = distances[1]
+			Rdetectdistance = distances[1]
 			print("Avoiding Collision...")
 			print "Left Sensor Distance:", Ldetectdistance, "CM"
 			print "Right Sensor Distance:", Rdetectdistance, "CM"
