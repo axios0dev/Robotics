@@ -63,25 +63,6 @@ GPIO.setup(26,GPIO.OUT) #RED
 GPIO.setup(13,GPIO.OUT) #GREEN
 GPIO.setup(19,GPIO.OUT) #BLUE
 
-#Tail Light PinSetup
-#Left Side
-GPIO.setup(10, GPIO.OUT) #Left Brake Light
-GPIO.setup(9, GPIO.OUT) #Left Indicator
-#Right Side
-GPIO.setup(11, GPIO.OUT) #Right Brake Light
-GPIO.setup(6, GPIO.OUT) #Right Indicator
-
-#PWM Setup
-LB_pwm = GPIO.PWM(10,100)
-LI_pwm = GPIO.PWM(9,100)
-RB_pwm = GPIO.PWM(11,100)
-RI_pwm = GPIO.PWM(6,100)
-#Start PWM instances at 0
-LB_pwm.start(0)
-LI_pwm.start(0)
-RB_pwm.start(0)
-RI_pwm.start(0)
-
 #Camera Setup
 #camera = PiCamera()
 #camera.resolution = (640,480)
@@ -335,35 +316,6 @@ def backspeed(i):
 	BLM_pwm.ChangeDutyCycle(i)
 	BRM_pwm.ChangeDutyCycle(i)
 
-#Tail Light Brightness
-def tlb(i):
-	LB_pwm.ChangeDutyCycle(i)
-	RB_pwm.ChangeDutyCycle(i)
-#Tail Light State
-def tailslights(state):
-	if (state == "ON"):
-		GPIO.output(10, True) #Left Light
-		GPIO.output(11, True) #Right Light
-	elif (state == "OFF"):
-		GPIO.output(10, False)
-		GPIO.output(11, False)
-
-#Indicator Brightness
-def ilb(i):
-	LI_pwm.ChangeDutyCycle(i)
-	RI_pwm.ChangeDutyCycle(i)
-#Indicator State
-def leftindicator(state):
-	if (state == "ON"):
-		GPIO.output(9, True) 
-	elif (state == "OFF"):
-		GPIO.output(9, False)
-def rightindicator(state):
-	if (state == "ON"):
-        	GPIO.output(6, True) 
-	elif (state == "OFF"):
-		GPIO.output(6, False)        
-
 def autodetectAI():
 	 #Entrapment detect Variables
          leftcount = 0
@@ -387,7 +339,7 @@ def autodetectAI():
                         rightcount += 1
                         rev(0.2)
                         pivotright(0.3)
-         	elif Ldetectdistance <= obsdist:
+          	elif Ldetectdistance <= obsdist:
                        	rightcount = 0
                         leftcount += 1
                         rev(0.2)
@@ -552,25 +504,11 @@ def controller():
                                 print("Collision Avoidance System Online")
                                 time.sleep(1)
 		elif colstate == 1 and Lcollisiondist < collisionrange:
-			#Tail Light setup
-			tlb(100)
-			ilb(100)
-			rightindicator("OFF")
-			leftindicator("ON")
-			taillights("ON")
-			#Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
 			print("Collision Detected On Left Sensor")
 		elif colstate == 1 and Rcollisiondist < collisionrange:
-			#Tail Light setup
-                        tlb(100)
-                        ilb(100)
-			leftindicator("OFF")
-                        rightindicator("ON")
-                        taillights("ON")
-			#Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
@@ -598,71 +536,29 @@ def controller():
 		#Thumbsticks
 		#Left ThumbStick X-Axis Turning
 		elif lx < -0.4:
-			#Tail Light setup
-                        tlb(0)
-                        ilb(100)
-			rightindicator("OFF")
-                        leftindicator("ON")
-                        taillights("OFF")
-			#Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			turnLEFT(0.1)
 			fwd(0.01)
 		elif lx > 0.4:
-			#Tail Light setup
-                        tlb(0)
-                        ilb(100)
-			rightindicator("OFF")
-                        leftindicator("ON")
-                        taillights("OFF")
-                        #Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			turnRIGHT(0.1)
 			fwd(0.01)
 		#Right ThumbStick X-Axis Pivoting (2 Speed)
 		elif rx <= -0.6 and rx >= -1.0:
-			#Tail Light setup
-                        tlb(100)
-                        ilb(100)
-                        rightindicator("OFF")
-                        leftindicator("ON")
-                        taillights("OFF")
-                        #Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			pivotleft(0.1)
 		elif rx <= -0.2 and rx >= -0.6:
-			#Tail Light setup
-                        tlb(100)
-                        ilb(50)
-                        rightindicator("OFF")
-                        leftindicator("ON")
-                        taillights("OFF")
-                        #Movment Functions
 			frontspeed(50)
 			backspeed(50)
 			pivotleft(0.1)
 		elif rx >= 0.2 and rx <= 0.6:
-			#Tail Light setup
-                        tlb(100)
-                        ilb(50)
-                        rightindicator("ON")
-                        leftindicator("OFF")
-                        taillights("OFF")
-                        #Movment Functions
 			frontspeed(50)
 			backspeed(50)
 			pivotright(0.1)
 		elif rx > 0.6 and rx <= 1.0:
-			#Tail Light setup
-                        tlb(100)
-                        ilb(100)
-                        rightindicator("ON")
-                        leftindicator("OFF")
-                        taillights("OFF")
-                        #Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			pivotright(0.1)
@@ -713,24 +609,10 @@ def controller():
 			fwd(0.1)
 		#Reverse 2-Speed
                 elif Ltrigger > 0.1 and Ltrigger <= 0.50:
-			#Tail Light setup
-                        tlb(50)
-                        ilb(100)
-                        rightindicator("OFF")
-                        leftindicator("OFF")
-                        taillights("ON")
-                        #Movment Functions
                         frontspeed(30)
                         backspeed(30)
                         rev(0.1)
                 elif Ltrigger > 0.50 and Ltrigger <= 1.0:
-			#Tail Light setup
-                        tlb(100)
-                        ilb(100)
-                        rightindicator("OFF")
-                        leftindicator("OFF")
-                        taillights("ON")
-                        #Movment Functions
                         frontspeed(100)
                         backspeed(100)
                         rev(0.1)
