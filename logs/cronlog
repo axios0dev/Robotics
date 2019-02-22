@@ -1,0 +1,9 @@
+Project Axios Operational
+Traceback (most recent call last):
+  File "projectaxios.py", line 690, in <module>
+    controller() 
+  File "projectaxios.py", line 359, in controller
+    joy = xbox.Joystick()
+  File "/home/pi/Robotics/xbox.py", line 62, in __init__
+    raise IOError('No Xbox controller/receiver found')
+IOError: No Xbox controller/receiver found
