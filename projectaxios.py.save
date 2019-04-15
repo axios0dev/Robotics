@@ -63,23 +63,24 @@ GPIO.setup(26,GPIO.OUT) #RED
 GPIO.setup(13,GPIO.OUT) #GREEN
 GPIO.setup(19,GPIO.OUT) #BLUE
 
-#Tail Light Pin Setup
+#Tail Light PinSetup
 #Left Side
 GPIO.setup(10, GPIO.OUT) #Left Brake Light
 GPIO.setup(9, GPIO.OUT) #Left Indicator
 #Right Side
 GPIO.setup(11, GPIO.OUT) #Right Brake Light
 GPIO.setup(6, GPIO.OUT) #Right Indicator
-#Tail Light Cluster Setup
-leftbrake_pwm = GPIO.PWM(10,100)
-leftind_pwm = GPIO.PWM(9,100)
-rightbrake_pwm = GPIO.PWM(11,100)
-rightind_pwm = GPIO.PWM(6,100)
+
+#PWM Setup
+LB_pwm = GPIO.PWM(10,100)
+LI_pwm = GPIO.PWM(9,100)
+RB_pwm = GPIO.PWM(11,100)
+RI_pwm = GPIO.PWM(6,100)
 #Start PWM instances at 0
-leftbrake_pwm.start(0)
-leftind_pwm.start(0)
-rightbrake_pwm.start(0)
-rightind_pwm.start(0)
+LB_pwm.start(0)
+LI_pwm.start(0)
+RB_pwm.start(0)
+RI_pwm.start(0)
 
 #Ultrasonic Collision Avoidance Measuring Distance
 def leftcollisiondetect():
@@ -322,19 +323,34 @@ def backspeed(i):
 	BLM_pwm.ChangeDutyCycle(i)
 	BRM_pwm.ChangeDutyCycle(i)
 
-#Tail Light Cluster Functions
-#Brake Lights
-def leftbrake(i):
-	leftbrake_pwm.ChangeDutyCycle(i)
+#Tail Light Brightness
+def tlb(i):
+	LB_pwm.ChangeDutyCycle(i)
+	RB_pwm.ChangeDutyCycle(i)
+#Tail Light State
+def tailslights(state):
+	if (state == "ON"):
+		GPIO.output(10, True) #Left Light
+		GPIO.output(11, True) #Right Light
+	elif (state == "OFF"):
+		GPIO.output(10, False)
+		GPIO.output(11, False)
 
-def rightbrake(i):
-	rightbrake_pwm.ChangeDutyCycle(i)
-#Indicator Lights
-def leftind(i):
-	leftind_pwm.ChangeDutyCycle(i)
-
-def rightind(i):
-	rightind_pwm.ChangeDutyCycle(i)
+#Indicator Brightness
+def ilb(i):
+	LI_pwm.ChangeDutyCycle(i)
+	RI_pwm.ChangeDutyCycle(i)
+#Indicator State
+def leftindicator(state):
+	if (state == "ON"):
+		GPIO.output(9, True) 
+	elif (state == "OFF"):
+		GPIO.output(9, False)
+def rightindicator(state):
+	if (state == "ON"):
+        	GPIO.output(6, True) 
+	elif (state == "OFF"):
+		GPIO.output(6, False)
 
 #Xbox 360 controller 
 #Maps Movment Functions and other functions to controoller buttons
@@ -379,71 +395,81 @@ def controller():
                         blueLED("OFF")
 			#Close Streaming Socket Server
 			#server_socket.close()
-			#Main Menu Loop Back
-			optionselect()
 		#Camera Recording Activation/Deactivation
 		elif joy.Start():
 			if rec == 0:
 				rec = 1
 				time.sleep(1)
-				#camera.start_recording(connection, format='h264')					
-				#camera.start_recording()	
+				print("Robot Vision Server Active")
+				#camera.start_recording(connection, format='h264')						
 			elif rec == 1:
 				rec = 0
+				print("Robot Vision Server Disabled")
 				#camera.stop_recording()
 				time.sleep(1)
 		#Collision Detection Features
 		elif joy.Y():
                         if colstate == 1:
                                 colstate = 0
+                                print("Collision Avoidance System Offline")
                                 time.sleep(1)
                         elif colstate == 0:
                                 colstate = 1
+                                print("Collision Avoidance System Online")
                                 time.sleep(1)
 		elif colstate == 1 and Lcollisiondist < collisionrange:
 			#Tail Light setup
-			leftbrake(0)
-			rightbrake(100)
-			leftind(100)
-			rightind(100)
+			tlb(100)
+			ilb(100)
+			rightindicator("OFF")
+			leftindicator("ON")
+			taillights("ON")
 			#Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
+			print("Collision Detected On Left Sensor")
 		elif colstate == 1 and Rcollisiondist < collisionrange:
 			#Tail Light setup
-		      	leftbrake(100)
-                        rightbrake(0)
-                        leftind(100)
-                        rightind(100)
+                        tlb(100)
+                        ilb(100)
+			leftindicator("OFF")
+                        rightindicator("ON")
+                        taillights("ON")
 			#Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			rev(0.2)
+			print("Collision Detected On Right Sensor")
 		#Rolling Burnout Mode Toggle
 		elif joy.Guide():
 			if RBMode == 0:
 				RBMode = 1
+				print("Rolling Burnout Mode Engaged")
 				time.sleep(1)
 			elif RBMode == 1:
 				RBMode = 0
+				print("Rolling Burnout Mode Disabled")
 				time.sleep(1)
 		#Rear Wheel Drive  Mode Handbreak Toggle
                 elif joy.A():
                         if hbrake == 0:
                                 hbrake = 1
+                                print("HandBreak ON")
                                 time.sleep(1)
                         elif hbrake == 1:
                                 hbrake = 0
+                                print("Handbreak OFF")
                                 time.sleep(1)
 		#Thumbsticks
 		#Left ThumbStick X-Axis Turning
 		elif lx < -0.4:
 			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(100)
-                        rightind(0)
+                        tlb(0)
+                        ilb(100)
+			rightindicator("OFF")
+                        leftindicator("ON")
+                        taillights("OFF")
 			#Movment Functions
 			frontspeed(100)
 			backspeed(100)
@@ -451,10 +477,11 @@ def controller():
 			fwd(0.01)
 		elif lx > 0.4:
 			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(100)
+                        tlb(0)
+                        ilb(100)
+			rightindicator("OFF")
+                        leftindicator("ON")
+                        taillights("OFF")
                         #Movment Functions
 			frontspeed(100)
 			backspeed(100)
@@ -463,40 +490,44 @@ def controller():
 		#Right ThumbStick X-Axis Pivoting (2 Speed)
 		elif rx <= -0.6 and rx >= -1.0:
 			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(100)
-                        rightind(0)
+                        tlb(100)
+                        ilb(100)
+                        rightindicator("OFF")
+                        leftindicator("ON")
+                        taillights("OFF")
                         #Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			pivotleft(0.1)
 		elif rx <= -0.2 and rx >= -0.6:
 			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(50)
-                        rightind(0)
+                        tlb(100)
+                        ilb(50)
+                        rightindicator("OFF")
+                        leftindicator("ON")
+                        taillights("OFF")
                         #Movment Functions
 			frontspeed(50)
 			backspeed(50)
 			pivotleft(0.1)
 		elif rx >= 0.2 and rx <= 0.6:
 			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(50)
+                        tlb(100)
+                        ilb(50)
+                        rightindicator("ON")
+                        leftindicator("OFF")
+                        taillights("OFF")
                         #Movment Functions
 			frontspeed(50)
 			backspeed(50)
 			pivotright(0.1)
 		elif rx > 0.6 and rx <= 1.0:
 			#Tail Light setup
-                  	leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(100)
+                        tlb(100)
+                        ilb(100)
+                        rightindicator("ON")
+                        leftindicator("OFF")
+                        taillights("OFF")
                         #Movment Functions
 			frontspeed(100)
 			backspeed(100)
@@ -505,124 +536,66 @@ def controller():
 		#Accelerate Trigger 
 		#4 Speed Rear Wheel Drive Mode (HandBreak ON)
 		elif hbrake == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-			#Movment Functions
 			frontspeed(0)
 			backspeed(25)
 			fwd(0.1)
 		elif hbrake == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(0)
                         backspeed(50)
                         fwd(0.1)
 		elif hbrake == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(0)
                         backspeed(75)
                         fwd(0.1)
 		elif hbrake == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(0)
                         backspeed(100)
                         fwd(0.1)
 		#Rolling Burnout(4 speed)
                 elif RBMode == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(10)
                         backspeed(25)
                         fwd(0.1)
                 elif RBMode == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(10)
                         backspeed(50)
                         fwd(0.1)
                 elif RBMode == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(10)
                         backspeed(75)
                         fwd(0.1)
                 elif RBMode == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
                         frontspeed(10)
                         backspeed(100)
                         fwd(0.1)
 		#All Wheel Drive 2-Speed
 		elif Rtrigger > 0.1 and Rtrigger <= 0.50:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
 			frontspeed(30)
 			backspeed(30)
 			fwd(0.1)
 		elif Rtrigger > 0.50 and Rtrigger <= 1.0:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
 			frontspeed(100)
 			backspeed(100)
 			fwd(0.1)
 		#Reverse 2-Speed
                 elif Ltrigger > 0.1 and Ltrigger <= 0.50:
 			#Tail Light setup
-			leftbrake(50)
-                        rightbrake(50)
-                        leftind(0)
-                        rightind(0)
+                        tlb(50)
+                        ilb(100)
+                        rightindicator("OFF")
+                        leftindicator("OFF")
+                        taillights("ON")
                         #Movment Functions
                         frontspeed(30)
                         backspeed(30)
                         rev(0.1)
                 elif Ltrigger > 0.50 and Ltrigger <= 1.0:
 			#Tail Light setup
-     			leftbrake(100)
-                        rightbrake(100)
-                        leftind(0)
-                        rightind(0)
+                        tlb(100)
+                        ilb(100)
+                        rightindicator("OFF")
+                        leftindicator("OFF")
+                        taillights("ON")
                         #Movment Functions
                         frontspeed(100)
                         backspeed(100)
@@ -646,36 +619,18 @@ def controller():
 						colavd = 0
 						time.sleep(1)
                 			elif leftcount  == 2:
-						#Tail Light setup
-                                                leftbrake(0)
-                                                rightbrake(0)
-                                                leftind(100)
-                                                rightind(0)
-                                                #Movment Functions
 						frontspeed(100)
 						backspeed(100)
                         			leftcount = 0
                         			rev(0.2)
                         			pivotleft(0.6)
                 			elif rightcount == 2:
-						#Tail Light setup
-                                                leftbrake(0)
-                                                rightbrake(0)
-                                                leftind(0)
-                                                rightind(100)
-                                                #Movment Functions
 						frontspeed(100)
 						backspeed(100)
                         			rightcount = 0
                         			rev(0.2)
                         			pivotright(0.6)
                 			elif Rdetectdistance <= obsdist:
-						#Tail Light setup
-                                                leftbrake(100)
-                                                rightbrake(0)
-                                                leftind(100)
-                                                rightind(100)
-                                                #Movment Functions
 						frontspeed(50)
 						backspeed(50)
                         			leftcount = 0
@@ -683,69 +638,8 @@ def controller():
                         			rev(0.2)
                         			pivotright(0.3)
                 			elif Ldetectdistance <= obsdist:
-						#Tail Light setup
-                                                leftbrake(0)
-                                                rightbrake(100)
-                                                leftind(100)
-                                                rightind(100)
-                                                #Movment Functions
 						frontspeed(50)
-						backspeed(50)
-                        			rightcount = 0
-                        			leftcount += 1
-                        			rev(0.2)
-                        			pivotleft(0.3)
-                			else:
-						#Tail Light setup
-			                        leftbrake(0)
-                        			rightbrake(0)
-                        			leftind(0)
-                        			rightind(0)
-                        			#Movment Functions
-						frontspeed(100)
-						backspeed(100)
-                        			fwd(0.1)
-                #RGB Headlight Dpad Integration
-		elif joy.dpadUp():
-			if RGB == 0:
-				RGB = 1
-				select = 1
-				RGBcolorcycle(select)
-				time.sleep(1)
-			elif RGB == 1:
-				RGB = 0
-				redLED("OFF")
-				greenLED("OFF")
-				blueLED("OFF")
-				time.sleep(1)
-		#Cycle Back Through colours
-		elif joy.dpadLeft():
-			if select > 1:
-				select -= 1
-				RGBcolorcycle(select)
-				time.sleep(1)
-			elif select == 1:
-				select = 8
-				RGBcolorcycle(select)
-				time.sleep(1)
-		#Cycle Forward Through colours
-		elif joy.dpadRight():
-			if select < 8:
-				select += 1
-				RGBcolorcycle(select)
-				time.sleep(1)
-			elif select == 8:
-				select = 1
-				RGBcolorcycle(select)
-				time.sleep(1)			
-		#Default Case For No Current Input
-		else:	
-			#Tail Light setup
-                        leftbrake(100)
-                        rightbrake(100)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-			stop(0.1)
+						backspeed(5
 #Main {};
-controller()
+print("Project Axios Operational")
+controller() 

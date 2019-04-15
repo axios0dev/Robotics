@@ -6,8 +6,15 @@ import curses
 import os
 import xbox
 import socket
+import gc
 from picamera import PiCamera
 from datetime import datetime
+#Automatic Memory Garbage Collection
+gc.enable()
+#Memory Leak Diagnostic
+#from pympler import tracker
+#import atexit
+#memtracker = tracker.SummaryTracker()
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -32,7 +39,6 @@ GPIO.setup(LTRIG, GPIO.OUT)
 GPIO.setup(LECHO, GPIO.IN)
 GPIO.output(LTRIG, False)
 time.sleep(1) 
-
 #Right Ultrasonic sensor
 RTRIG = 2
 RECHO = 3
@@ -71,9 +77,9 @@ GPIO.setup(9, GPIO.OUT) #Left Indicator
 GPIO.setup(11, GPIO.OUT) #Right Brake Light
 GPIO.setup(6, GPIO.OUT) #Right Indicator
 #Tail Light Cluster Setup
-leftbrake_pwm = GPIO.PWM(10,100)
+rightbrake_pwm = GPIO.PWM(10,100)
 leftind_pwm = GPIO.PWM(9,100)
-rightbrake_pwm = GPIO.PWM(11,100)
+leftbrake_pwm = GPIO.PWM(11,100)
 rightind_pwm = GPIO.PWM(6,100)
 #Start PWM instances at 0
 leftbrake_pwm.start(0)
@@ -82,16 +88,20 @@ rightbrake_pwm.start(0)
 rightind_pwm.start(0)
 
 #Camera Setup
-#camera = PiCamera()
-#camera.resolution = (640,480)
-#camera.framerate = (24)
-#time.sleep(1)
+camera = PiCamera()
+camera.resolution = (640,480)
+camera.framerate = (24)
+time.sleep(1)
 
 #Streaming Socket Server Setup
-#server_socket = socket.socket()
-#server_socket.bind(('0.0.0.0', 8000))
-#server_socket.listen(0)
-#connection = server_socket.accept()[0].makefile('wb')
+server_socket = socket.socket()
+server_socket.bind(('0.0.0.0', 8000))
+server_socket.listen(0)
+connection = server_socket.accept()[0].makefile('wb')
+
+#Show Memory Tracker On Exit
+def onexit():
+	memtracker.print_diff()
 
 #Ultrasonic Collision Avoidance Measuring Distance
 def leftcollisiondetect():
@@ -169,7 +179,7 @@ def magLED(state):
 def whiteLED(state):
 	if (state == "ON"):
 		redLED("ON")
-                blueLED("ON")
+		blueLED("ON")
 		greenLED("ON")
 	elif (state == "OFF"):
                 redLED("OFF")
@@ -348,7 +358,7 @@ def leftind(i):
 def rightind(i):
 	rightind_pwm.ChangeDutyCycle(i)
 
-def autodetectAI():
+'''def autodetectAI():
 	 #Entrapment detect Variables
          leftcount = 0
          rightcount = 0
@@ -378,6 +388,7 @@ def autodetectAI():
                        	pivotleft(0.3)
            	else:
                        	fwd(0.1)	
+'''
 #Arrow Pad Control of Robot
 #First RC Function Test
 def keypad():
@@ -487,408 +498,423 @@ def controller():
 	hbrake = 0
 	#Camera Recording Control Variabl
 	rec = 0
-	#Trigger Setup 
-	while True:
-	#Auto Refresh Value Store Varaibles
-		Lcollisiondist = leftcollisiondetect()
-		Rcollisiondist = rightcollisiondetect()
-		Ltrigger = joy.leftTrigger() 
-		Rtrigger = joy.rightTrigger()
-	#Joystrick Setup
-		(lx,ly) = joy.leftStick()
-		(rx,ry) = joy.rightStick()
-	#Info Screen
-		#print("Xbox 360 Controller Active")
-		#Control Scheme Tree
-		#Close Down Safley
-                if joy.Back():
-                        joy.close()
-			#Redundant Camera Recording Shutoff
-			#camera.stop_recording()
-			#Headlights Off
-			redLED("OFF")
-                       	greenLED("OFF")
-                        blueLED("OFF")
-			#Close Streaming Socket Server
-			#server_socket.close()
-			#Main Menu Loop Back
-			optionselect()
-		#Camera Recording Activation/Deactivation
-		elif joy.Start():
-			if rec == 0:
-				rec = 1
-				time.sleep(1)
-				print("Robot Vision Server Active")
-				#camera.start_recording(connection, format='h264')					
-				#camera.start_recording()	
-			elif rec == 1:
-				rec = 0
-				print("Robot Vision Server Disabled")
-				#camera.stop_recording()
-				time.sleep(1)
-		#Collision Detection Features
-		elif joy.Y():
-                        if colstate == 1:
-                                colstate = 0
-                                print("Collision Avoidance System Offline")
-                                time.sleep(1)
-                        elif colstate == 0:
-                                colstate = 1
-                                print("Collision Avoidance System Online")
-                                time.sleep(1)
-		elif colstate == 1 and Lcollisiondist < collisionrange:
-			#Tail Light setup
-			leftbrake(100)
-			rightbrake(0)
-			leftind(100)
-			rightind(100)
-			#Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			rev(0.2)
-			#print("Collision Detected On Left Sensor")
-		elif colstate == 1 and Rcollisiondist < collisionrange:
-			#Tail Light setup
-		      	leftbrake(0)
-                        rightbrake(100)
-                        leftind(100)
-                        rightind(100)
-			#Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			rev(0.2)
-		#	print("Collision Detected On Right Sensor")
-		#Rolling Burnout Mode Toggle
-		elif joy.Guide():
-			if RBMode == 0:
-				RBMode = 1
-				print("Rolling Burnout Mode Engaged")
-				time.sleep(1)
-			elif RBMode == 1:
-				RBMode = 0
-				print("Rolling Burnout Mode Disabled")
-				time.sleep(1)
-		#Rear Wheel Drive  Mode Handbreak Toggle
-                elif joy.A():
-                        if hbrake == 0:
-                                hbrake = 1
-                                print("HandBreak ON")
-                                time.sleep(1)
-                        elif hbrake == 1:
-                                hbrake = 0
-                                print("Handbreak OFF")
-                                time.sleep(1)
-		#Thumbsticks
-		#Left ThumbStick X-Axis Turning
-		elif lx < -0.4:
-			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(100)
-                        rightind(0)
-			#Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			turnLEFT(0.1)
-			fwd(0.01)
-		elif lx > 0.4:
-			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(100)
-                        #Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			turnRIGHT(0.1)
-			fwd(0.01)
-		#Right ThumbStick X-Axis Pivoting (2 Speed)
-		elif rx <= -0.6 and rx >= -1.0:
-			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(100)
-                        rightind(0)
-                        #Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			pivotleft(0.1)
-		elif rx <= -0.2 and rx >= -0.6:
-			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(50)
-                        rightind(0)
-                        #Movment Functions
-			frontspeed(50)
-			backspeed(50)
-			pivotleft(0.1)
-		elif rx >= 0.2 and rx <= 0.6:
-			#Tail Light setup
-			leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(50)
-                        #Movment Functions
-			frontspeed(50)
-			backspeed(50)
-			pivotright(0.1)
-		elif rx > 0.6 and rx <= 1.0:
-			#Tail Light setup
-                  	leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(100)
-                        #Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			pivotright(0.1)
-		#Triggers
-		#Accelerate Trigger 
-		#4 Speed Rear Wheel Drive Mode (HandBreak ON)
-		elif hbrake == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-			#Movment Functions
-			frontspeed(0)
-			backspeed(25)
-			fwd(0.1)
-		elif hbrake == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(0)
-                        backspeed(50)
-                        fwd(0.1)
-		elif hbrake == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(0)
-                        backspeed(75)
-                        fwd(0.1)
-		elif hbrake == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(0)
-                        backspeed(100)
-                        fwd(0.1)
-		#Rolling Burnout(4 speed)
-                elif RBMode == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(10)
-                        backspeed(25)
-                        fwd(0.1)
-                elif RBMode == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(10)
-                        backspeed(50)
-                        fwd(0.1)
-                elif RBMode == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(10)
-                        backspeed(75)
-                        fwd(0.1)
-                elif RBMode == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(10)
-                        backspeed(100)
-                        fwd(0.1)
-		#All Wheel Drive 2-Speed
-		elif Rtrigger > 0.1 and Rtrigger <= 0.50:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-			frontspeed(30)
-			backspeed(30)
-			fwd(0.1)
-		elif Rtrigger > 0.50 and Rtrigger <= 1.0:
-			#Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-			frontspeed(100)
-			backspeed(100)
-			fwd(0.1)
-		#Reverse 2-Speed
-                elif Ltrigger > 0.1 and Ltrigger <= 0.50:
-			#Tail Light setup
-			leftbrake(50)
-                        rightbrake(50)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(30)
-                        backspeed(30)
-                        rev(0.1)
-                elif Ltrigger > 0.50 and Ltrigger <= 1.0:
-			#Tail Light setup
-     			leftbrake(100)
-                        rightbrake(100)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-                        frontspeed(100)
-                        backspeed(100)
-                        rev(0.1)
-		#AI Auto Pilot Override
-		elif joy.leftBumper():
-			if colavd == 0:
-				colavd = 1
-				time.sleep(1)
-				#Entrapment detect Variables
-         			leftcount = 0
-         			rightcount = 0
-         			obsdist = 25
-         			while colavd == 1:
-                			Ldetectdistance = leftcollisiondetect()
-                			Rdetectdistance = rightcollisiondetect()
-                			#Infinitely avoid collision desicison tree
-                			#If entrament is detected reverse and turn 180 degress
-					if joy.leftBumper():
-						stop(0.1)
-						colavd = 0
-						time.sleep(1)
-                			elif leftcount  == 2:
-						#Tail Light setup
-                                                leftbrake(0)
-                                                rightbrake(0)
-                                                leftind(100)
-                                                rightind(0)
-                                                #Movment Functions
-						frontspeed(100)
-						backspeed(100)
-                        			leftcount = 0
-                        			rev(0.2)
-                        			pivotleft(0.6)
-                			elif rightcount == 2:
-						#Tail Light setup
-                                                leftbrake(0)
-                                                rightbrake(0)
-                                                leftind(0)
-                                                rightind(100)
-                                                #Movment Functions
-						frontspeed(100)
-						backspeed(100)
-                        			rightcount = 0
-                        			rev(0.2)
-                        			pivotright(0.6)
-                			elif Rdetectdistance <= obsdist:
-						#Tail Light setup
-                                                leftbrake(0)
-                                                rightbrake(100)
-                                                leftind(100)
-                                                rightind(100)
-                                                #Movment Functions
-						frontspeed(50)
-						backspeed(50)
-                        			leftcount = 0
-                        			rightcount += 1
-                        			rev(0.2)
-                        			pivotright(0.3)
-                			elif Ldetectdistance <= obsdist:
-						#Tail Light setup
-                                                leftbrake(100)
-                                                rightbrake(0)
-                                                leftind(100)
-                                                rightind(100)
-                                                #Movment Functions
-						frontspeed(50)
-						backspeed(50)
-                        			rightcount = 0
-                        			leftcount += 1
-                        			rev(0.2)
-                        			pivotleft(0.3)
-                			else:
-						#Tail Light setup
-			                        leftbrake(0)
-                        			rightbrake(0)
-                        			leftind(0)
-                        			rightind(0)
-                        			#Movment Functions
-						frontspeed(100)
-						backspeed(100)
-                        			fwd(0.1)
-                #RGB Headlight Dpad Integration
-		elif joy.dpadUp():
-			if RGB == 0:
-				RGB = 1
-				select = 1
-				RGBcolorcycle(select)
-				time.sleep(1)
-			elif RGB == 1:
-				RGB = 0
+	try:
+		#Trigger Setup 
+		while True:
+			#Garbage Collection
+			#gc.collect()
+		#Auto Refresh Value Store Varaibles
+			Lcollisiondist = leftcollisiondetect()
+			Rcollisiondist = rightcollisiondetect()
+			Ltrigger = joy.leftTrigger() 
+			Rtrigger = joy.rightTrigger()
+		#Joystrick Setup
+			(lx,ly) = joy.leftStick()
+			(rx,ry) = joy.rightStick()
+		#Info Screen
+			#print("Xbox 360 Controller Active")
+			#Control Scheme Tree
+			#Close Down Safley
+                	if joy.Back():
+                        	joy.close()
+				#Redundant Camera Recording Shutoff
+				camera.stop_recording()
+				#Headlights Off
 				redLED("OFF")
-				greenLED("OFF")
-				blueLED("OFF")
-				time.sleep(1)
-		#Cycle Back Through colours
-		elif joy.dpadLeft():
-			if select > 1:
-				select -= 1
-				RGBcolorcycle(select)
-				time.sleep(1)
-			elif select == 1:
-				select = 8
-				RGBcolorcycle(select)
-				time.sleep(1)
-		#Cycle Forward Through colours
-		elif joy.dpadRight():
-			if select < 8:
-				select += 1
-				RGBcolorcycle(select)
-				time.sleep(1)
-			elif select == 8:
-				select = 1
-				RGBcolorcycle(select)
-				time.sleep(1)			
-		#Default Case For No Current Input
-		else:	
-			#Tail Light setup
-                        leftbrake(100)
-                        rightbrake(100)
-                        leftind(0)
-                        rightind(0)
-                        #Movment Functions
-			stop(0.1)
+                       		greenLED("OFF")
+                        	blueLED("OFF")
+				#Close Streaming Socket Server
+				server_socket.close()
+				#Main Menu Loop Back
+				optionselect()
+			#Camera Recording Activation/Deactivation
+			elif joy.Start():
+				if rec == 0:
+					rec = 1
+					time.sleep(1)
+					print("Robot Vision Server Active")
+					camera.start_recording(connection, format='h264')					
+					#camera.start_recording()	
+				elif rec == 1:
+					rec = 0
+					print("Robot Vision Server Disabled")
+					camera.stop_recording()
+					time.sleep(1)
+			#Collision Detection Features
+			elif joy.Y():
+                        	if colstate == 1:
+                                	colstate = 0
+                                	#print("Collision Avoidance System Offline")
+                                	time.sleep(1)
+                        	elif colstate == 0:
+                                	colstate = 1
+                                	#print("Collision Avoidance System Online")
+                                	time.sleep(1)
+			elif colstate == 1 and Lcollisiondist < collisionrange:
+				#Tail Light setup
+				leftbrake(100)
+				rightbrake(0)
+				leftind(100)
+				rightind(100)
+				#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				rev(0.2)
+				#print("Collision Detected On Left Sensor")
+			elif colstate == 1 and Rcollisiondist < collisionrange:
+				#Tail Light setup
+		      		leftbrake(0)
+                        	rightbrake(100)
+                        	leftind(100)
+                        	rightind(100)
+				#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				rev(0.2)
+			#	print("Collision Detected On Right Sensor")
+			#Rolling Burnout Mode Toggle
+			elif joy.Guide():
+				if RBMode == 0:
+					RBMode = 1
+					print("Rolling Burnout Mode Engaged")
+					time.sleep(1)
+				elif RBMode == 1:
+					RBMode = 0
+					print("Rolling Burnout Mode Disabled")
+					time.sleep(1)
+			#Rear Wheel Drive  Mode Handbreak Toggle
+                	elif joy.A():
+                        	if hbrake == 0:
+                                	hbrake = 1
+                                	print("HandBreak ON")
+                                	time.sleep(1)
+                        	elif hbrake == 1:
+                                	hbrake = 0
+                                	print("Handbreak OFF")
+                                	time.sleep(1)
+			#Thumbsticks
+			#Left ThumbStick X-Axis Turning
+			elif lx < -0.4:
+				#Tail Light setup
+				leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(100)
+                        	rightind(0)
+				#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				turnLEFT(0.1)
+				fwd(0.01)
+			elif lx > 0.4:
+				#Tail Light setup
+				leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(100)
+                        	#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				turnRIGHT(0.1)
+				fwd(0.01)
+			#Right ThumbStick X-Axis Pivoting (2 Speed)
+			elif rx <= -0.6 and rx >= -1.0:
+				#Tail Light setup
+				leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(100)
+                        	rightind(0)
+                        	#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				pivotleft(0.1)
+			elif rx <= -0.2 and rx >= -0.6:
+				#Tail Light setup
+				leftbrake(0)
+                        	rightbrake(0)
+                       	 	leftind(50)
+                        	rightind(0)
+                        	#Movment Functions
+				frontspeed(50)
+				backspeed(50)
+				pivotleft(0.1)
+			elif rx >= 0.2 and rx <= 0.6:
+				#Tail Light setup
+				leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(50)
+                        	#Movment Functions
+				frontspeed(50)
+				backspeed(50)
+				pivotright(0.1)
+			elif rx > 0.6 and rx <= 1.0:
+				#Tail Light setup
+                  		leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(100)
+                        	#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				pivotright(0.1)
+			#Triggers
+			#Accelerate Trigger 
+			#4 Speed Rear Wheel Drive Mode (HandBreak ON)
+			elif hbrake == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+				rightind(0)
+				#Movment Functions
+	 			frontspeed(0)
+				backspeed(25)
+				fwd(0.1)
+			elif hbrake == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                        	frontspeed(0)
+                        	backspeed(50)
+                        	fwd(0.1)
+			elif hbrake == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                        	frontspeed(0)
+                        	backspeed(75)
+                        	fwd(0.1)
+			elif hbrake == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
+				#Tail Light setup
+                       		leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                       		frontspeed(0)
+                        	backspeed(100)
+                        	fwd(0.1)
+			#Rolling Burnout(4 speed)
+                	elif RBMode == 1 and Rtrigger > 0.1 and Rtrigger <= 0.25:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                        	frontspeed(10)
+                        	backspeed(25)
+                        	fwd(0.1)
+                	elif RBMode == 1 and Rtrigger > 0.25 and Rtrigger <= 0.50:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                       		frontspeed(10)
+                        	backspeed(50)
+                        	fwd(0.1)
+                	elif RBMode == 1 and Rtrigger > 0.50 and Rtrigger <= 0.75:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                        	frontspeed(10)
+                        	backspeed(75)
+                       		fwd(0.1)
+                	elif RBMode == 1 and Rtrigger > 0.75 and Rtrigger <= 1.0:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                        	frontspeed(10)
+                        	backspeed(100)
+                        	fwd(0.1)
+
+			#All Wheel Drive 2-Speed
+			elif Rtrigger > 0.1 and Rtrigger <= 0.50:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+				frontspeed(30)
+				backspeed(30)
+				fwd(0.1)
+			elif Rtrigger > 0.50 and Rtrigger <= 1.0:
+				#Tail Light setup
+                        	leftbrake(0)
+                        	rightbrake(0)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+				frontspeed(100)
+				backspeed(100)
+				fwd(0.1)
+			#Reverse 2-Speed
+                	elif Ltrigger > 0.1 and Ltrigger <= 0.50:
+				#Tail Light setup
+				leftbrake(50)
+                        	rightbrake(50)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                        	frontspeed(30)
+                        	backspeed(30)
+                        	rev(0.1)
+                	elif Ltrigger > 0.50 and Ltrigger <= 1.0:
+				#Tail Light setup
+     				leftbrake(100)
+                        	rightbrake(100)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+                       		frontspeed(100)
+                        	backspeed(100)
+                        	rev(0.1)
+			#AI Auto Pilot Override
+			elif joy.leftBumper():
+				if colavd == 0:
+					colavd = 1
+					time.sleep(1)
+					#Entrapment detect Variables
+         				leftcount = 0
+         				rightcount = 0
+         				obsdist = 25
+         				while colavd == 1:
+                				Ldetectdistance = leftcollisiondetect()
+                				Rdetectdistance = rightcollisiondetect()
+                				#Infinitely avoid collision desicison tree
+                				#If entrament is detected reverse and turn 180 degress
+						if joy.leftBumper():
+							stop(0.1)
+							colavd = 0
+							time.sleep(1)
+                				elif leftcount  == 2:
+							#Tail Light setup
+                                                	leftbrake(0)
+                                                	rightbrake(0)
+                                                	leftind(100)
+                                                	rightind(0)
+                                                	#Movment Functions
+							frontspeed(100)
+							backspeed(100)
+                        				leftcount = 0
+                        				rev(0.2)
+                        				pivotleft(0.6)
+                				elif rightcount == 2:
+							#Tail Light setup
+                                                	leftbrake(0)
+                                                	rightbrake(0)
+                                                	leftind(0)
+                                                	rightind(100)
+                                                	#Movment Functions
+							frontspeed(100)
+							backspeed(100)
+                        				rightcount = 0
+                        				rev(0.2)
+                        				pivotright(0.6)
+                				elif Rdetectdistance <= obsdist:
+							#Tail Light setup
+                                                	leftbrake(0)
+                                                	rightbrake(100)
+                                                	leftind(100)
+                                                	rightind(100)
+                                                	#Movment Functions
+							frontspeed(50)
+							backspeed(50)
+                        				leftcount = 0
+                        				rightcount += 1
+                        				rev(0.2)
+                        				pivotright(0.3)
+                				elif Ldetectdistance <= obsdist:
+							#Tail Light setup
+                                                	leftbrake(100)
+                                                	rightbrake(0)
+                                                	leftind(100)
+                                                	rightind(100)
+                                                	#Movment Functions
+							frontspeed(50)
+							backspeed(50)
+                        				rightcount = 0
+                        				leftcount += 1
+                        				rev(0.2)
+                        				pivotleft(0.3)
+                				else:
+							#Tail Light setup
+			                        	leftbrake(0)
+                        				rightbrake(0)
+                        				leftind(0)
+                        				rightind(0)
+                        			#Movment Functions
+							frontspeed(100)
+							backspeed(100)
+                        				fwd(0.1)
+                	#RGB Headlight Dpad Integration
+			elif joy.dpadUp():
+				if RGB == 0:
+					RGB = 1
+					select = 1
+					RGBcolorcycle(select)
+					time.sleep(1)
+				elif RGB == 1:
+					RGB = 0
+					redLED("OFF")
+					greenLED("OFF")
+					blueLED("OFF")
+					time.sleep(1)
+			#Cycle Back Through colours
+			elif joy.dpadLeft():
+				if select > 1:
+					select -= 1
+					RGBcolorcycle(select)
+					time.sleep(1)
+				elif select == 1:
+					select = 8
+					RGBcolorcycle(select)
+					time.sleep(1)
+			#Cycle Forward Through colours
+			elif joy.dpadRight():
+				if select < 8:
+					select += 1
+					RGBcolorcycle(select)
+					time.sleep(1)
+				elif select == 8:
+					select = 1
+					RGBcolorcycle(select)
+					time.sleep(1)			
+			#Default Case For No Current Input
+			else:	
+				#Tail Light setup
+                        	leftbrake(100)
+                        	rightbrake(100)
+                        	leftind(0)
+                        	rightind(0)
+                        	#Movment Functions
+				stop(0.1)
+				#gc.collect()
+	finally:
+				print("reached finally clasue")
+				leftbrake(0)
+                                rightbrake(0)
+                                leftind(0)
+                                rightind(0)
+                                #Movment Functions
+                                stop(0.1)
+		
+
 #Main Mode Select Menu
 def optionselect():
 	print("Robotic Rover Option Menu Selection")
@@ -900,7 +926,7 @@ def optionselect():
 	selection = input("Select Mode: ")
 	#Collision Avoidence Demo
 	if selection == 1:
-		#Entrapment detect Variables
+		'''#Entrapment detect Variables
 		leftcount = 0
 		rightcount = 0
 		obsdist = 30
@@ -934,7 +960,7 @@ def optionselect():
                                 rev(0.2)
                                 pivotleft(0.3)			
 			else:
-                                fwd(0.1)
+                                fwd(0.1)'''
 
 	#Skid Only Mode
 	elif selection == 2:
@@ -942,6 +968,7 @@ def optionselect():
 		skid(10)
 	#Remote Engine Power Cut Signal
 	elif selection == 5:
+		#memtracker.print_diff()
 		print("Cutting Power To All Motors...")
 		stop(1)
 		os.system('clear')
@@ -960,6 +987,6 @@ def optionselect():
 
 #Main {};
 optionselect()
-
+#atexit.register(onexit)
 
 
