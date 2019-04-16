@@ -1,5 +1,4 @@
-#Author Elliott Tiver
-#Flinders Univiersty Information Technology Student
+#Author Elliott Tiver Flinders Univiersty Information Technology Student
 import RPi.GPIO as GPIO
 import time
 import curses
@@ -10,7 +9,7 @@ import gc
 from picamera import PiCamera
 from datetime import datetime
 #Automatic Memory Garbage Collection
-gc.enable()
+#gc.enable()
 #Memory Leak Diagnostic
 #from pympler import tracker
 #import atexit
@@ -88,23 +87,55 @@ rightbrake_pwm.start(0)
 rightind_pwm.start(0)
 
 #Camera Setup
-camera = PiCamera()
-camera.resolution = (640,480)
-camera.framerate = (24)
-time.sleep(1)
+#camera = PiCamera()
+#camera.resolution = (640,480)
+#camera.framerate = (24)
+#time.sleep(1)
 
 #Streaming Socket Server Setup
-server_socket = socket.socket()
-server_socket.bind(('0.0.0.0', 8000))
-server_socket.listen(0)
-connection = server_socket.accept()[0].makefile('wb')
+#server_socket = socket.socket()
+#server_socket.bind(('0.0.0.0', 8000))
+#server_socket.listen(0)
+#connection = server_socket.accept()[0].makefile('wb')
 
 #Show Memory Tracker On Exit
 def onexit():
 	memtracker.print_diff()
 
-#Ultrasonic Collision Avoidance Measuring Distance
+
+def frontsensor(trig, echo):
+	GPIO.output(trig, False)
+	time.sleep(0.3)
+ 	GPIO.output(trig, True)
+        time.sleep(0.00001)
+        GPIO.output(trig, False)
+	#convert input to a centimere di
+	timeout = 0.01
+	timeout_start = time.time()
+	while time.time() < timeout_start + timeout:
+		while GPIO.input(echo) == 0:
+			pass 
+        	start = time.time()
+        	while GPIO.input(echo) == 1:
+			pass
+        	stop = time.time()
+        #duration = stop - start
+        #distance = duration * 17150
+        #rdist = round(distance, 2)
+        #round((stop-start) * 17150, 2)
+        	distance = (stop - start) * 17150
+        	rdist = round(distance, 2)
+		#print(rdist)
+		if rdist >= 1 and rdist <= 100:
+			return rdist
+		else :
+			return 35
+
+	
+
+'''#Ultrasonic Collision Avoidance Measuring Distance
 def leftcollisiondetect():
+	time.sleep(0.2)
         #Send and recvice pulse
         GPIO.output(LTRIG, True)
         time.sleep(0.00001)
@@ -112,16 +143,22 @@ def leftcollisiondetect():
         #convert input to a centimere distance
         while GPIO.input(LECHO) == 0:
                 pass
-        start = time.time()
+        	start = time.time()
         while GPIO.input(LECHO) == 1:
                 pass
-        stop = time.time()
-        duration = stop - start
-        distance = duration * 17150
-        rdist = round(distance, 2)
-        return rdist
+        	stop = time.time()
+        #duration = stop - start
+        #distance = duration * 17150
+        #rdist = round(distance, 2)
+	#round((stop-start) * 17150, 2)
+	distance = (stop - start) * 17150
+	rdist = round(distance, 2)
+	#rdist = 35
+        return round((stop-start) * 17150, 2)
+
 
 def rightcollisiondetect():
+	time.sleep(0.2)
         #Send recive pulse
         GPIO.output(RTRIG, True)
         time.sleep(0.00001)
@@ -129,14 +166,18 @@ def rightcollisiondetect():
         #convert and return data
         while GPIO.input(RECHO) == 0:
                 pass
-        start = time.time()
+        	start = time.time()
         while GPIO.input(RECHO) == 1:
                 pass
-        stop = time.time()
-        duration = stop - start
-        distance = duration * 17150
-        rdist = round(distance, 2)
-        return rdist
+        	stop = time.time()
+        #duration = stop - start
+        #distance = duration * 17150
+        #rdist = round(distance, 2)
+        #rdist = round((stop-start) * 17150, 2)
+	#distance = (stop - start) * 17150
+	#rdist = round(distance , 2)
+    	#rdist = 35
+        return round((stop-start) * 17150, 2)'''
 
 #RGB Headlight Colours
 #RGB  COLOUR FUNCTIONS/COMBINATIONS
@@ -412,10 +453,15 @@ def keypad():
 		offsetavoidance = 25
 		char = screen.getch()
 		#Ultrasonic colission avoidance implementation
-		leftcollisionavoidance = leftcollsiondetect()
-		rightcolavd = rightcollisiondetect()
+		#leftcolavd = leftcollisiondetect()
+		#rightcolavd = rightcollisiondetect()
+		leftcolavd = frontsensor(LTRIG, LECHO)
+		#leftcolavd = 36
+		time.sleep(0.1)
+		rightcolavd = frontsensor(RTRIG, RECHO)
+		time.sleep(0.1)
 		#control structure
-		if leftcollisionavoidance <= offsetavoidance and rightcolavd <= offsetavoidance and collisionstate == 'ON':
+		if leftcolavd <= offsetavoidance and rightcolavd <= offsetavoidance and collisionstate == 'ON':
 			screen.addstr(3,0, '>> Avoiding Collision!!')
 			stop(0.1)
 			rev(0.2)
@@ -436,24 +482,62 @@ def keypad():
 		elif char == curses.KEY_UP:
 			#offsetadvoidance = 15
 			screen.addstr(3,0,'>> Skids!!')
+			frontspeed(0)
+			backspeed(100)
 			skid(0.01)
 		elif char == curses.KEY_RIGHT:
 			screen.addstr(3,0,'>> Right\n')
+			frontspeed(100)
+			backspeed(100)
+			leftbrake(0)
+                        rightbrake(0)
+                        leftind(0)
+                        rightind(100)
 			turnRIGHT(0.01)
 		elif char == curses.KEY_LEFT:
 			screen.addstr(3,0,'>> Left\n')
+			frontspeed(100)
+			backspeed(100)
+			leftbrake(0)
+                        rightbrake(0)
+                        leftind(100)
+                        rightind(0)
 			turnLEFT(0.01)
 		elif char == ord('w'):
 			screen.addstr(3,0,'>> Forward\n')
+			frontspeed(100)
+			backspeed(100)
+			leftbrake(0)
+                        rightbrake(0)
+                        leftind(0)
+                        rightind(0)
 			fwd(0.01)
 		elif char == ord('s'):
 			screen.addstr(3,0,'>> Reverse\n')
+			frontspeed(100)
+			backspeed(100)
+			leftbrake(100)
+                        rightbrake(100)
+                        leftind(0)
+                        rightind(0)
 			rev(0.01)
 		elif char == ord('a'):
 			screen.addstr(3,0,'>> Left Pivot\n')
+			frontspeed(100)
+			backspeed(100)
+			leftbrake(0)
+                        rightbrake(0)
+                        leftind(100)
+                        rightind(0)
 			pivotleft(0.01)
 		elif char == ord('d'):
 			screen.addstr(3,0,'>> Right Pivot\n')
+			frontspeed(100)
+			backspeed(100)
+			leftbrake(0)
+                        rightbrake(0)
+                        leftind(0)
+                        rightind(100)
 			pivotright(0.01)
 		elif char == curses.ERR:
 			screen.addstr(3,0,'>> Idle\n')
@@ -504,8 +588,20 @@ def controller():
 			#Garbage Collection
 			#gc.collect()
 		#Auto Refresh Value Store Varaibles
-			Lcollisiondist = leftcollisiondetect()
-			Rcollisiondist = rightcollisiondetect()
+			#Lcollisiondist = leftcollisiondetect()
+			try:
+				Lcollisiondist = frontsensor(LTRIG, LECHO)
+			#Lcollisiondist = 35
+			#time.sleep(0.1)
+			#Rcollisiondist = rightcollisiondetect()
+				Rcollisiondist = frontsensor(RTRIG, RECHO)
+			finally:
+				pass
+			#time.sleep(0.1)			
+			#print("finally reached controller exit ")
+			
+				 
+			#time.sleep(0.1)
 			Ltrigger = joy.leftTrigger() 
 			Rtrigger = joy.rightTrigger()
 		#Joystrick Setup
@@ -794,8 +890,11 @@ def controller():
          				rightcount = 0
          				obsdist = 25
          				while colavd == 1:
-                				Ldetectdistance = leftcollisiondetect()
-                				Rdetectdistance = rightcollisiondetect()
+                				#Ldetectdistance = leftcollisiondetect()
+                				#Rdetectdistance = rightcollisiondetect()
+						Ldetectdistance = frontsensor(LTRIG, LECHO)
+						#Ldetectdistance = 36
+						Rdetectdistance = frontsensor(RTRIG,RECHO)
                 				#Infinitely avoid collision desicison tree
                 				#If entrament is detected reverse and turn 180 degress
 						if joy.leftBumper():
