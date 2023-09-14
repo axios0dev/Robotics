@@ -5,12 +5,11 @@ from Modules.MotorController import MotorController
 from time import sleep
 
 def main():
-   MotorController.StopMotors(1)
-   MotorController.DriveForward(25, 3)
-   MotorController.DriveForward(50, 3)
-   MotorController.DriveForward(75, 3)
-   MotorController.DriveForward(100, 3)
-   MotorController.StopMotors(1)
+   MotorController.Burnout(25, 3)
+   MotorController.Burnout(50, 3)
+   MotorController.Burnout(75, 3)
+   MotorController.Burnout(100, 3)
+   
  
  
     

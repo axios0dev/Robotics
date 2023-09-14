@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-
 # This modules contains the code to control the RBG LED headlights,
 # of the AxiosRoboticsRCv1 unit.
-
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
