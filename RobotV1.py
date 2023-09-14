@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Author Elliott Tiver Flinders University Information Technology Student
 import RPi.GPIO as GPIO
