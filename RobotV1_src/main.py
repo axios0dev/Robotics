@@ -7,43 +7,35 @@ def main():
     #tbd
     HeadlightController.RGBcolorcycle("RED")
     print("RED")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("GREEN")
     print("GREEN")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("BLUE")
     print("BLUE")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("YELLOW")
     print("YELLOW")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("CYAN")
     print("CYAN")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("Magenta")
     print("Magenta")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("WHITE")
     print("WHITE")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
     HeadlightController.RGBcolorcycle("ORANGE")
     print("ORANGE")
-    sleep(3)
-    HeadlightController.LedOff()
+    sleep(5)
     
 
 if __name__ == "__main__":

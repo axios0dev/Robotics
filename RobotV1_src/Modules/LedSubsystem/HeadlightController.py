@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
+# This modules contains the code to control the RBG led headlights of the AxiosRoboticsRCv1 unit.
+
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+# Pin definitions.
 RedPin = 26
 GreenPin = 13
 BluePin = 19
-
-# RBG Headlight Pin Setup
+# Pin Setup.
 GPIO.setup(RedPin, GPIO.OUT)  # RED
 GPIO.setup(GreenPin, GPIO.OUT)  # GREEN
 GPIO.setup(BluePin, GPIO.OUT)  # BLUE
 
-# RGB Headlight Colours
-# RGB  COLOUR FUNCTIONS/COMBINATIONS
+
+# RGB headlight base colour functions.
 def RedLed(state):
     if (state == "ON"):
         GPIO.output(RedPin, True)
@@ -36,6 +38,7 @@ def BlueLed(state):
         GPIO.output(BluePin, False)
 
 
+# RGB headlight mixed colour functions.
 def YellowLed(state):
     if (state == "ON"):
         RedLed("ON")
@@ -81,58 +84,64 @@ def OrangeLed(state):
     elif (state == "OFF"):
         RedLed("OFF")
         YellowLed("OFF")
-        
+
+
+# Function to disable all LED pins.        
 def LedOff():
     RedLed("OFF")
     GreenLed("OFF")
     BlueLed("OFF")
-    
-            
 
 
-# Program To Cycle RGB Headlight Colours On 360 Controller D-Pad
+# Function to select RBG led colour.
 def RGBcolorcycle(selection):
-    # All Led States Account For Both The Next And Prevous Led Colour And Disables Them
-    # Red Led
+    # All leds pins are reset upon colour change, this ensures no unwanted colour mixing occurs.
+    # Red Led.
     if selection == "RED":
+        LedOff()
         OrangeLed("OFF")
         GreenLed("OFF")
         RedLed("ON")
-    # Green Led
+    # Green Led.
     elif selection == "GREEN":
+        LedOff()
         RedLed("OFF")
         BlueLed("OFF")
         GreenLed("ON")
-    # Blue Led
+    # Blue Led.
     elif selection == "BLUE":
+        LedOff()
         GreenLed("OFF")
         YellowLed("OFF")
         BlueLed("ON")
-    # Yellow Led
+    # Yellow Led.
     elif selection == "YELLOW":
+        LedOff()
         BlueLed("OFF")
         CyanLed("OFF")
         YellowLed("ON")
-    # Cyan Led
+    # Cyan Led.
     elif selection == "CYAN":
+        LedOff()
         YellowLed("OFF")
         MagentaLed("OFF")
         CyanLed("ON")
-    # Magenta Led
+    # Magenta Led.
     elif selection == "Magenta":
+        LedOff()
         CyanLed("OFF")
         WhiteLed("OFF")
         MagentaLed("ON")
-    # White Led
+    # White Led.
     elif selection == "WHITE":
+        LedOff()
         MagentaLed("OFF")
         OrangeLed("OFF")
         WhiteLed("ON")
-    # Orange Led
+    # Orange Led.
     elif selection == "ORANGE":
+        LedOff()
         WhiteLed("OFF")
         RedLed("OFF")
         OrangeLed("ON")
-
-
 
