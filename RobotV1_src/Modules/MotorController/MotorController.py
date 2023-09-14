@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import RPi.GPIO as GPIO
+from time import sleep
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -12,7 +13,7 @@ FrontLeftMtrReversePin = 23
 FrontLeftMtrSpeedControlPin = 14
 GPIO.setup(FrontLeftMtrReversePin, GPIO.OUT)  # IN1
 GPIO.setup(FrontLeftMtrForwardPin, GPIO.OUT)  # IN2
-GPIO.setup(FrontLeftMotorActivatePin, GPIO.OUT)
+GPIO.setup(FrontLeftMtrSpeedControlPin, GPIO.OUT)
 # PWM pin config at 100Hz.
 FrontLeftMtrPWM = GPIO.PWM(FrontLeftMtrSpeedControlPin, 100)
 FrontLeftMtrPWM.start(0)
@@ -49,126 +50,143 @@ GPIO.setup(RearRightMtrSpeedControlPin, GPIO.OUT)
 RearRightMtrPWM = GPIO.PWM(RearRightMtrSpeedControlPin, 100)
 RearRightMtrPWM.start(0)
 
-# Movement functions
-def fwd(speed, duration):
-    # Front
-    GPIO.output(24, True)  # F/L FWD
-    GPIO.output(23, False)  # F/L REV
-    GPIO.output(25, True)  # F/R FWD
-    GPIO.output(12, False)  # F/R REV
-    # Back
-    GPIO.output(22, True)  # B/L FWD
-    GPIO.output(27, False)  # B/L REV
-    GPIO.output(18, True)  # B/R FWD
-    GPIO.output(17, False)  # B/R REV
-    time.sleep(i)
+# Front motor speed control function, 
+# speed >= 0 && <= 100.
+def FrontMtrSpeed(speed):
+    FrontLeftMtrPWM.ChangeDutyCycle(speed)
+    FrontRightMtrPWM.ChangeDutyCycle(speed)
+
+
+# Back motor speed control function.
+# speed >= 0 && <= 100
+def RearMtrSpeed(speed):
+    RearLeftMtrPWM.ChangeDutyCycle(speed)
+    RearRightMtrPWM.ChangeDutyCycle(speed)
+
+
+
+# Movement functions.
+def DriveForward(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, True)
+    GPIO.output(FrontLeftMtrReversePin, False)
+    GPIO.output(FrontRightMtrForwardPin, True)
+    GPIO.output(FrontRightMtrReversePin, False)
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, True)
+    GPIO.output(RearLeftMtrReversePin, False)
+    GPIO.output(RearRightMtrForwardPin, True)
+    GPIO.output(RearRightMtrReversePin, False)
+    sleep(duration)
 
     
-def rev(i):
-    # Front
-    GPIO.output(24, False)  # F/L FWD
-    GPIO.output(23, True)  # F/L REV
-    GPIO.output(25, False)  # F/R FWD
-    GPIO.output(12, True)  # F/R REV
-    # Back
-    GPIO.output(22, False)  # B/L FWD
-    GPIO.output(27, True)  # B/L REV
-    GPIO.output(18, False)  # B/R FWD
-    GPIO.output(17, True)  # B/R REV
-    time.sleep(i)
+def DriveBackwards(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, False)
+    GPIO.output(FrontLeftMtrReversePin, True)  
+    GPIO.output(FrontRightMtrForwardPin, False)  
+    GPIO.output(FrontRightMtrReversePin, True)  
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, False)  
+    GPIO.output(RearLeftMtrReversePin, True)
+    GPIO.output(RearRightMtrForwardPin, False)  
+    GPIO.output(RearRightMtrReversePin, True)  
+    sleep(duration)
 
     
-def turnLEFT(i):
-    # Front
-    GPIO.output(25, True)  # F/R FWD
-    GPIO.output(12, False)  # F/R REV
-    GPIO.output(24, False)  # F/L FWD
-    GPIO.output(23, False)  # F/L REV
-    # Back
-    GPIO.output(18, True)  # B/R FWD
-    GPIO.output(17, False)  # B/R REV
-    GPIO.output(22, False)  # B/L FWD
-    GPIO.output(27, False)  # B/L REV
-    time.sleep(i)
-
-
-def pivotleft(i):
-    # Front
-    GPIO.output(24, False)  # F/L FWD
-    GPIO.output(23, True)  # F/L REV
-    GPIO.output(25, True)  # F/R FWD
-    GPIO.output(12, False)  # F/R REV
-    # Back
-    GPIO.output(22, False)  # B/L FWD
-    GPIO.output(27, True)  # B/L REV
-    GPIO.output(18, True)  # B/R FWD
-    GPIO.output(17, False)  # B/R REV
-    time.sleep(i)
-
+def TurnLeft(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, False)  
+    GPIO.output(FrontLeftMtrReversePin, False)
+    GPIO.output(FrontRightMtrForwardPin, True)
+    GPIO.output(FrontRightMtrReversePin, False)  
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, False)
+    GPIO.output(RearLeftMtrReversePin, False)  
+    GPIO.output(RearRightMtrForwardPin, True)
+    GPIO.output(RearRightMtrReversePin, False)
+    sleep(duration)
     
-def turnRIGHT(i):
-    # Front
-    GPIO.output(24, True)  # F/L FWD
-    GPIO.output(23, False)  # F/L REV
-    GPIO.output(25, False)  # F/R FWD
-    GPIO.output(12, False)  # F/R REV
-    # Back
-    GPIO.output(22, True)  # B/L FWD
-    GPIO.output(27, False)  # B/L REV
-    GPIO.output(18, False)  # B/R FWD
-    GPIO.output(17, False)  # B/R REV
+def PivotLeft(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, False)  # F/L FWD
+    GPIO.output(FrontLeftMtrReversePin, True)  # F/L REV
+    GPIO.output(FrontRightMtrForwardPin, True)  # F/R FWD
+    GPIO.output(FrontRightMtrReversePin, False)  # F/R REV
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, False)  # B/L FWD
+    GPIO.output(RearLeftMtrReversePin, True)  # B/L REV
+    GPIO.output(RearRightMtrForwardPin, True)  # B/R FWD
+    GPIO.output(RearRightMtrReversePin, False)  # B/R REV
+    sleep(duration)
+
+def TurnRight(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, True)
+    GPIO.output(FrontLeftMtrReversePin, False)  
+    GPIO.output(FrontRightMtrForwardPin, False)  
+    GPIO.output(FrontRightMtrReversePin, False)  
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, True)  
+    GPIO.output(RearLeftMtrReversePin, False)  
+    GPIO.output(RearRightMtrForwardPin, False)  
+    GPIO.output(RearRightMtrReversePin, False)  
+    sleep(duration)
+
+
+def PivotRight(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, True)  
+    GPIO.output(FrontLeftMtrReversePin, False)  
+    GPIO.output(FrontRightMtrForwardPin, False)
+    GPIO.output(FrontRightMtrReversePin, True)  
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, True)  
+    GPIO.output(RearLeftMtrReversePin, False)  
+    GPIO.output(RearRightMtrForwardPin, False)
+    GPIO.output(RearRightMtrReversePin, True)
+    sleep(duration)
+
+
+def StopMotors(duration):
+    FrontMtrSpeed(0)
+    RearMtrSpeed(0)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, False)
+    GPIO.output(FrontLeftMtrReversePin, False)  
+    GPIO.output(FrontRightMtrForwardPin, False)  
+    GPIO.output(FrontRightMtrReversePin, False)  
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, False)  
+    GPIO.output(RearLeftMtrReversePin, False)  
+    GPIO.output(RearRightMtrForwardPin, False)  
+    GPIO.output(RearRightMtrReversePin, False)  
+    sleep(duration)
+
+
+def Burnout(speed, duration):
+    FrontMtrSpeed(speed)
+    RearMtrSpeed(speed)
+    # Front motors.
+    GPIO.output(FrontLeftMtrForwardPin, True)
+    GPIO.output(FrontLeftMtrReversePin, True)  
+    GPIO.output(FrontRightMtrForwardPin, True)  
+    GPIO.output(FrontRightMtrReversePin, True)
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, True)  
+    GPIO.output(RearLeftMtrReversePin, False)  
+    GPIO.output(RearRightMtrForwardPin, True)  
+    GPIO.output(RearRightMtrReversePin, False)  
     time.sleep(i)
-
-
-def pivotright(i):
-    # Front
-    GPIO.output(24, True)  # F/L FWD
-    GPIO.output(23, False)  # F/L REV
-    GPIO.output(25, False)  # F/R FWD
-    GPIO.output(12, True)  # F/R REV
-    # Back
-    GPIO.output(22, True)  # B/L FWD
-    GPIO.output(27, False)  # B/L REV
-    GPIO.output(18, False)  # B/R FWD
-    GPIO.output(17, True)  # B/R REV
-    time.sleep(i)
-
-
-def stop(i):
-    # Front
-    GPIO.output(24, True)  # F/L FWD
-    GPIO.output(23, True)  # F/L REV
-    GPIO.output(25, True)  # F/R FWD
-    GPIO.output(12, True)  # F/R REV
-    # Back
-    GPIO.output(22, True)  # B/L FWD
-    GPIO.output(27, True)  # B/L REV
-    GPIO.output(18, True)  # B/R FWD
-    GPIO.output(17, True)  # B/R REV
-    time.sleep(i)
-
-
-def skid(i):
-    # Front
-    GPIO.output(24, True)  # F/L FWD
-    GPIO.output(23, True)  # F/L REV
-    GPIO.output(25, True)  # F/R FWD
-    GPIO.output(12, True)  # F/R REV
-    # Back
-    GPIO.output(22, True)  # B/L FWD
-    GPIO.output(27, False)  # B/L REV
-    GPIO.output(18, True)  # B/R FWD
-    GPIO.output(17, False)  # B/R REV
-    time.sleep(i)
-
-
-# Front Motor Speed Control Function
-def frontspeed(i):
-    FLM_pwm.ChangeDutyCycle(i)
-    FRM_pwm.ChangeDutyCycle(i)
-
-
-# Back Motor Speed Control Function
-def backspeed(i):
-    BLM_pwm.ChangeDutyCycle(i)
-    BRM_pwm.ChangeDutyCycle(i)
