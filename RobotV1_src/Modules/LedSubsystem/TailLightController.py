@@ -40,13 +40,13 @@ def RightBrakeLightOn(brightness):
     RightBrakeLightPWM.ChangeDutyCycle(brightness)
 
     
-def BrakeLightsOff(side="ALL"):
+def BrakeLightsOff(side="BOTH"):
     if(side == "LEFT"):
         LeftBrakeLightPWM.ChangeDutyCycle(0)    
     elif(side == "RIGHT"): 
         RightBrakeLightPWM.ChangeDutyCycle(0) 
     # Default case is to turn both lights off.    
-    elif(side == "ALL"):
+    elif(side == "BOTH"):
         LeftBrakeLightPWM.ChangeDutyCycle(0)
         RightBrakeLightPWM.ChangeDutyCycle(0)
 
@@ -60,12 +60,12 @@ def RightIndicatorOn(brightness):
     RightIndicatorPWM.ChangeDutyCycle(brightness)
 
     
-def IndicatorLightsOff(side="ALL"):
+def IndicatorLightsOff(side="BOTH"):
     if(side == "LEFT"):
         LeftIndicatorPWM.ChangeDutyCycle(0)    
     elif(side == "RIGHT"): 
         RightIndicatorPWM.ChangeDutyCycle(0) 
     # Default case is to turn both lights off.    
-    elif(side == "ALL"):
+    elif(side == "BOTH"):
         LeftIndicatorPWM.ChangeDutyCycle(0)
         RightIndicatorPWM.ChangeDutyCycle(0)    
