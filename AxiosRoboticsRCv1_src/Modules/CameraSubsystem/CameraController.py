@@ -24,12 +24,17 @@ connection = server_socket.accept()[0].makefile('wb')
 # by this controller.
 CameraCurrentlyRecording = False
 
+
 # Start streaming over the TCP connection file descriptor.
 def VideoStreamStart():
     global CameraCurrentlyRecording
     if(CameraCurrentlyRecording == False):
         camera.start_recording(connection, format='h264')
         CameraCurrentlyRecording = True
+    # If this is called while a the video feed is active stop the video feed.    
+    elif(CameraCurrentlyRecording == True):
+        StopVideo()
+
 
 # Stop the video feed from the camera module.        
 def StopVideo():
@@ -38,12 +43,17 @@ def StopVideo():
         camera.stop_recording()
         CameraCurrentlyRecording = False
 
+
 # This function needs to be called before exiting the program to,
 # close the active TCP connection and socket server.        
 def ServerCleanUp():
+    if(CameraCurrentlyRecording == True):
+        camera.stop_recording()
+        CameraCurrentlyRecording = False
     # Close Streaming Socket Server
     connection.close()
     server_socket.close()
+
 
 # This function is to be used to create a video recording to local,
 # storage on the AxiosRoboticsRCv1 unit.            

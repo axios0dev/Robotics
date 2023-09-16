@@ -31,15 +31,19 @@ RightIndicatorPWM.start(0)
 
 
 # Tail light cluster functions.
-# Brake lights, brightness >= 0 && <= 100.
-def LeftBrakeLightOn(brightness):
-    LeftBrakeLightPWM.ChangeDutyCycle(brightness)
+# These functions toggle the brake lights on/off independently. 
+# brightness >= 0 && <= 100.
+def BrakeLightsOn(brightness, side="BOTH"):
+    if(side == "LEFT"):
+        LeftBrakeLightPWM.ChangeDutyCycle(brightness)    
+    elif(side == "RIGHT"): 
+        RightBrakeLightPWM.ChangeDutyCycle(brightness) 
+    # Default case is to turn both lights on.    
+    elif(side == "BOTH"):
+        LeftBrakeLightPWM.ChangeDutyCycle(brightness)
+        RightBrakeLightPWM.ChangeDutyCycle(brightness)
 
-
-def RightBrakeLightOn(brightness):
-    RightBrakeLightPWM.ChangeDutyCycle(brightness)
-
-    
+           
 def BrakeLightsOff(side="BOTH"):
     if(side == "LEFT"):
         LeftBrakeLightPWM.ChangeDutyCycle(0)    
@@ -51,7 +55,8 @@ def BrakeLightsOff(side="BOTH"):
         RightBrakeLightPWM.ChangeDutyCycle(0)
 
 
-# Indicator lights, brightness >= 0 && <= 100.
+# These functions toggle the Indicator lights on/off independently. 
+# brightness >= 0 && <= 100.
 def LeftIndicatorOn(brightness):
     LeftIndicatorPWM.ChangeDutyCycle(brightness)
 
@@ -59,7 +64,18 @@ def LeftIndicatorOn(brightness):
 def RightIndicatorOn(brightness):
     RightIndicatorPWM.ChangeDutyCycle(brightness)
 
-    
+
+def IndicatorLightsOff(brightness, side="BOTH"):
+    if(side == "LEFT"):
+        LeftIndicatorPWM.ChangeDutyCycle(brightness)    
+    elif(side == "RIGHT"): 
+        RightIndicatorPWM.ChangeDutyCycle(brightness) 
+    # Default case is to turn both lights on.    
+    elif(side == "BOTH"):
+        LeftIndicatorPWM.ChangeDutyCycle(brightness)
+        RightIndicatorPWM.ChangeDutyCycle(brightness) 
+
+            
 def IndicatorLightsOff(side="BOTH"):
     if(side == "LEFT"):
         LeftIndicatorPWM.ChangeDutyCycle(0)    

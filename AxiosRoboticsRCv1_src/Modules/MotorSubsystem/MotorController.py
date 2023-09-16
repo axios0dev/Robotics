@@ -51,6 +51,9 @@ GPIO.setup(RearRightMtrSpeedControlPin, GPIO.OUT)
 RearRightMtrPWM = GPIO.PWM(RearRightMtrSpeedControlPin, 100)
 RearRightMtrPWM.start(0)
 
+# Full brightness definition.
+FullBrightness = 100
+
 
 # Front motor speed control function, 
 # speed >= 0 && <= 100.
@@ -113,7 +116,7 @@ def DriveBackwards(speed, duration):
     
 def TurnLeft(speed, duration):
     # Tail light controls.
-    TailLightController.LeftIndicatorOn(100)
+    TailLightController.LeftIndicatorOn(FullBrightness)
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -159,7 +162,7 @@ def PivotLeft(speed, duration):
 
 def TurnRight(speed, duration):
     # Tail light controls.
-    TailLightController.RightIndicatorOn(100)
+    TailLightController.RightIndicatorOn(FullBrightness)
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -204,6 +207,10 @@ def PivotRight(speed, duration):
 
 
 def StopMotors():
+    # Turn on brake lights.
+    TailLightController.LeftBrakeLightOn(FullBrightness)
+    TailLightController.RightBrakeLightOn(FullBrightness)
+    
     # Front motors.
     GPIO.output(FrontLeftMtrForwardPin, False)
     GPIO.output(FrontLeftMtrReversePin, False)  
@@ -218,8 +225,8 @@ def StopMotors():
 
 def Burnout(speed, duration):
     # Tail light controls.
-    TailLightController.LeftIndicatorOn(100)
-    TailLightController.RightIndicatorOn(100)
+    TailLightController.LeftIndicatorOn(FullBrightness)
+    TailLightController.RightIndicatorOn(FullBrightness)
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
