@@ -2,18 +2,20 @@
 
 from Modules.LedSubsystem import HeadlightController, TailLightController
 from Modules.MotorController import MotorController
+from Modules.CameraSubsystem import VideoController
 from time import sleep
 
 def main():
-   MotorController.Burnout(25, 3)
-   MotorController.Burnout(50, 3)
-   MotorController.Burnout(75, 3)
-   MotorController.Burnout(100, 3)
-   
- 
- 
+    print("Stream Started")
+    VideoController.VideoStreamStart()
+    sleep(5)
+    print("Stopping video")
+    VideoController.StopVideo()
+    print("Cleaning up server")
+    VideoController.ServerCleanUp()
     
-
+    
+   
 if __name__ == "__main__":
     main()
     
