@@ -57,15 +57,7 @@ def BrakeLightsOff(side="BOTH"):
 
 # These functions toggle the Indicator lights on/off independently. 
 # brightness >= 0 && <= 100.
-def LeftIndicatorOn(brightness):
-    LeftIndicatorPWM.ChangeDutyCycle(brightness)
-
-
-def RightIndicatorOn(brightness):
-    RightIndicatorPWM.ChangeDutyCycle(brightness)
-
-
-def IndicatorLightsOff(brightness, side="BOTH"):
+def IndicatorLightsOn(brightness, side="BOTH"):
     if(side == "LEFT"):
         LeftIndicatorPWM.ChangeDutyCycle(brightness)    
     elif(side == "RIGHT"): 

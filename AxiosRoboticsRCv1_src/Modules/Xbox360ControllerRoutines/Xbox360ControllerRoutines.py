@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import os import call
+from os import call
 import xbox
 from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TaillightController
-
+from Modules.MotorSubystem import MotorController
 # Initialize the controller object.
 Controller = xbox.Joystick()
 # Global state flag variables.
@@ -22,10 +22,14 @@ hbrake = 0
 rec = 0
 
 CameraModuleUsed = False
+CollisionAvoidanceOn = False
+RollingBurnoutModeEnabled = False
 
 def ControllerRoutines():
     # Global variable linkage.
     global CameraModuleUsed
+    global CollisionAvoidanceOn
+    global RollingBurnoutModeEnabled
     
     while True:
         # Live left and right trigger position values.
@@ -57,48 +61,49 @@ def ControllerRoutines():
         # Y button powers on the front ultrasonic distance sensor module and,
         # enables dual collision avoidance. 
         elif Controller.Y():
-            if colstate == 1:
-                colstate = 0
-                # Turn Off Sensor Managment Module
-                GPIO.output(promini, False)
-                time.sleep(1)
-            elif colstate == 0:
-                colstate = 1
+            # Turn on collision avoidance.
+            if(CollisionAvoidanceOn == False):
+                CollisionAvoidanceOn = True
                 # Turn On Sensor Managment Module
                 GPIO.output(promini, True)
                 time.sleep(1)
-        # Prevent Collision Detected By Left Sensor
-        elif GPIO.input(LeftalrtReg) == 1  and colstate == 1:
-            # Tail Light setup
-            leftbrake(100)
-            rightbrake(0)
-            leftind(100)
-            rightind(100)
-            # Movment Functions
-            frontspeed(100)
-            backspeed(100)
-            rev(0.3)
+            # Turn off collision avoidance.    
+            elif(CollisionAvoidanceOn == True):  
+                CollisionAvoidanceOn = False  
+                # Turn Off Sensor Managment Module
+                GPIO.output(promini, False)
+                time.sleep(1)
+        
+        # Collision avoidance checks.
+        # Prevent Collision Detected By Left Sensor.
+        elif (CollisionAvoidanceOn == True) and (GPIO.input(LeftalrtReg) == 1):
+            # Stop all motors.
+            MotorController.StopMotors()
+            # Turn on left indicator to show which side the obstacle was detected on.
+            TaillightController.IndicatorLightsOn(100, "LEFT")
+            # Drive backwards for 0.3 seconds to avoid obstacle.
+            MotorController.DriveBackwards(100, 0.3)
+            # Turn off indicator after this routine has finished.
+            TaillightController.IndicatorLightsOff("LEFT")
+            
         # Prevent Collision Detected By Right Sensor
-        elif GPIO.input(RightalrtReg) == 1 and colstate == 1:
-            # Tail Light setup
-            leftbrake(0)
-            rightbrake(100)
-            leftind(100)
-            rightind(100)
-            # Movment Functions
-            frontspeed(100)
-            backspeed(100)
-            rev(0.3)
+        elif  (CollisionAvoidanceOn == True) and (GPIO.input(RightalrtReg) == 1):
+            # Stop all motors.
+            MotorController.StopMotors()
+            # Turn on right indicator to show which side the obstacle was detected on.
+            TaillightController.IndicatorLightsOn(100, "RIGHT")
+            # Drive backwards for 0.3 seconds to avoid obstacle.
+            MotorController.DriveBackwards(100, 0.3)
+            # Turn off indicator after this routine has finished.
+            TaillightController.IndicatorLightsOff("RIGHT")
 
-            # Rolling Burnout Mode Toggle
-           elif Controller.Guide():
-            if RBMode == 0:
-                RBMode = 1
-                time.sleep(1)
-            elif RBMode == 1:
-                RBMode = 0
-                time.sleep(1)
-
+        # Guide button activates rolling burnout easter egg mode.
+        elif Controller.Guide():
+            if RollingBurnoutModeEnabled == False:
+                RollingBurnoutModeEnabled = True
+            elif RollingBurnoutModeEnabled == True:
+                RollingBurnoutModeEnabled = False
+                
         # Rear Wheel Drive  Mode Handbreak Toggle
         elif Controller.A():
             if hbrake == 0:
