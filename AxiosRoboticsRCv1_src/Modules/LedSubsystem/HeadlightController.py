@@ -93,7 +93,7 @@ def LedOff():
 
 
 # Function to select RBG led colour.
-def RGBcolorcycle(selection):
+def RGBColorCycle(selection):
     # All leds pins are reset upon colour change, this ensures no unwanted colour mixing occurs.
     # Red Led.
     if selection == "RED":

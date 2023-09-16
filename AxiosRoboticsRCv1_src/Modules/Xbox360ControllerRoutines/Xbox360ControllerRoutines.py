@@ -19,6 +19,11 @@ TRIGGERTHREEQTRPRESSED: Final[float] = 0.75
 TRIGGERFULLPRESSED: Final[int] = 1
 DETECTIONSUNTILENTRAPMENT: Final[int] = 3
 
+HEADLIGHTCOLOURS: Final = ["RED", "GREEN", "BLUE", "YELLOW", "CYAN", "Magenta", "WHITE", "ORANGE"]
+# Default headlight colour on startup.
+# Currently: Cyan
+DEFAULTHEADLIGHTCOLOUR: Final[int] = 4
+
 # Global state flag variables.
 CameraModuleUsed = False
 CollisionAvoidanceOn = False
@@ -26,6 +31,47 @@ RollingBurnoutModeEnabled = False
 RearWheelDriveBurnoutEnabled = False
 SelfDrivingAIActive = False
 
+RGBHeadLightOn = False
+RBGHeadLightChangedFromDefault = False
+CurrentRGBHeadlightColourSelected
+
+
+def RGBHeadLightDPadRoutine(state):
+    global RGBHeadLightOn
+    global RBGHeadLightChangedFromDefault
+    global CurrentRGBHeadlightColourSelected
+    
+    if(state == "OFF"):
+        HeadlightController.LedOff()
+        RGBHeadLightOn = False
+        # Return back to the ControllerRoutines function.
+        return 
+    elif(state == "ON"):
+        RGBHeadLightOn = True
+        continue
+    
+    if(state == "NEXT"):
+        Selection = 1
+    elif(state == "PREV"):
+        Selection = -1 
+           
+    if not RBGHeadLightChangedFromDefault:
+        if((HEADLIGHTCOLOURS.index(DEFAULTHEADLIGHTCOLOUR) + Selection) >= (HEADLIGHTCOLOURS.len() - 1)):
+            CurrentRGBHeadlightColourSelected = 0
+        else: 
+            CurrentRGBHeadlightColourSelected = (HEADLIGHTCOLOURS.index(DEFAULTHEADLIGHTCOLOUR) + Selection)
+            
+    else:
+        if((HEADLIGHTCOLOURS.index(CurrentRGBHeadlightColourSelected) + Selection) >= (HEADLIGHTCOLOURS.len() - 1)):
+            CurrentRGBHeadlightColourSelected = 0
+        else: 
+            CurrentRGBHeadlightColourSelected = (HEADLIGHTCOLOURS.index(CurrentRGBHeadlightColourSelected) + Selection)
+        
+    HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+    # Return back to the ControllerRoutines function.
+    return   
+
+       
 # This function creates digital 4-speed PWM rear wheel drive transmission and disables the front
 # two motors so that the AxiosRoboticsRCv1 unit can perform a variable speed standing
 # burnout.  
@@ -44,6 +90,7 @@ def RearWheelDriveBurnout():
         MotorController.Burnout(0, 100, 0.1)
     # Return back to the ControllerRoutines function.
     return     
+
 
 # This function creates digital 4-speed PWM rear wheel drive transmission and reduces the front
 # two motors to a crawling speed so that the AxiosRoboticsRCv1 unit can perform a rolling burnout
@@ -64,7 +111,6 @@ def RollingBurnoutMode():
         MotorController.Burnout(4, 75, 0.1)
     # Return back to the ControllerRoutines function.
     return      
-    
 
 
 # This function stops the current drive trajectory when a collision is detected,
@@ -104,6 +150,7 @@ def AvoidEntrapment(side):
      # Return back to the ControllerRoutines function.
     return 
 
+
 def AvoidObstacle(side):
     # Stop all motors.
     MotorController.StopMotors()
@@ -120,6 +167,7 @@ def AvoidObstacle(side):
         MotorController.TurnRight(100, 0.6)
     # Return back to the ControllerRoutines function.
     return 
+
 
 # The AxiosRoboticsRCv1 unit will enter an infinite loop and will drive around,
 # endlessly avoiding collisions and entrapment in corners.
@@ -148,49 +196,18 @@ def SelfDrivingAI():
         # Object detected on left side avoid obstacle.    
         elif (GPIO.input(LeftalrtAI) == 1):
             AvoidObstacle("LEFT")
+            LeftSensorDetectionCount += 1
         # Object detected on right side avoid obstacle.    
         elif (GPIO.input(RightalrtAI) == 1):
-            AvoidObstacle("RIGHT")   
+            AvoidObstacle("RIGHT")
+            RightSensorDetectionCount += 1   
         # Drive forwards at full speed if no objects are detected.    
         else:
             MotorController.DriveForwards(100, 0.1)
     # Return back to the ControllerRoutines function.
     return 
 
-def RGBHeadLightDPadRoutine():
-              if RGB == 0:
-                RGB = 1
-                select = 1
-                RGBcolorcycle(select)
-                time.sleep(1)
-            elif RGB == 1:
-                RGB = 0
-                redLED("OFF")
-                greenLED("OFF")
-                blueLED("OFF")
-                time.sleep(1)
-                # Cycle Back Through colours
-            elif Controller.dpadLeft():
-                if select > 1:
-                    select -= 1
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-                elif select == 1:
-                    select = 8
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-            # Cycle Forward Through colours
-            elif Controller.dpadRight():
-                if select < 8:
-                    select += 1
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-                elif select == 8:
-                    select = 1
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-    
-    
+   
 def ControllerRoutines():
     # Global variable linkage.
     global CameraModuleUsed
@@ -198,6 +215,9 @@ def ControllerRoutines():
     global RollingBurnoutModeEnabled
     global RearWheelDriveBurnoutEnabled
     global SelfDrivingAIActive
+    # Turn on the RGB headlights at their currently set default colour.
+    HeadlightController.RGBColorCycle(DEFAULTHEADLIGHTCOLOUR)
+    RGBHeadLightOn = True
     
     while True:
         # Live left and right trigger position values.
@@ -325,43 +345,18 @@ def ControllerRoutines():
             
         # RGB Headlight Dpad Integration
         elif Controller.dpadUp():
-            if RGB == 0:
-                RGB = 1
-                select = 1
-                RGBcolorcycle(select)
-                time.sleep(1)
-            elif RGB == 1:
-                RGB = 0
-                redLED("OFF")
-                greenLED("OFF")
-                blueLED("OFF")
-                time.sleep(1)
-                # Cycle Back Through colours
-            elif Controller.dpadLeft():
-                if select > 1:
-                    select -= 1
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-                elif select == 1:
-                    select = 8
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-            # Cycle Forward Through colours
-            elif Controller.dpadRight():
-                if select < 8:
-                    select += 1
-                    RGBcolorcycle(select)
-                    time.sleep(1)
-                elif select == 8:
-                    select = 1
-                    RGBcolorcycle(select)
-                    time.sleep(1)
+            if not RGBHeadLightOn:
+                RGBHeadLightDPadRoutine("ON")
+            elif RGBHeadLightOn:
+                RGBHeadLightDPadRoutine("OFF")   
+        # Cycle Back Through colours
+        elif Controller.dpadLeft():
+            RGBHeadLightDPadRoutine("PREV")
+        # Cycle Forward Through colours
+        elif Controller.dpadRight():
+            RGBHeadLightDPadRoutine("NEXT")
+               
         # Default Case For No Current Input
         else:
-            # Tail Light setup
-            leftbrake(100)
-            rightbrake(100)
-            leftind(0)
-            rightind(0)
-            # Movment Functions
-            stop(0.1)
+            MotorController.StopMotors()
+           
