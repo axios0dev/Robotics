@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from os import call
+import os 
 from typing import Final
-import xbox
+from Modules.Xbox360ControllerRoutines import xbox
 from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TaillightController
@@ -48,7 +48,6 @@ def RGBHeadLightDPadRoutine(state):
         return 
     elif(state == "ON"):
         RGBHeadLightOn = True
-        continue
     
     if(state == "NEXT"):
         Selection = 1
@@ -208,7 +207,7 @@ def SelfDrivingAI():
     return 
 
    
-def ControllerRoutines():
+def StartControllerRoutines():
     # Global variable linkage.
     global CameraModuleUsed
     global CollisionAvoidanceOn
