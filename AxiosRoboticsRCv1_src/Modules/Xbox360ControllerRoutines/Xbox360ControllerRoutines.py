@@ -26,6 +26,46 @@ RollingBurnoutModeEnabled = False
 RearWheelDriveBurnoutEnabled = False
 SelfDrivingAIActive = False
 
+# This function creates digital 4-speed PWM rear wheel drive transmission and disables the front
+# two motors so that the AxiosRoboticsRCv1 unit can perform a variable speed standing
+# burnout.  
+def RearWheelDriveBurnout():
+    # First gear 25% throttle.
+    if(RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERQTRPRESSED):
+        MotorController.Burnout(0, 25, 0.1)
+    # Second gear 50% throttle.
+    elif (RightTrigger > TRIGGERQTRPRESSED) and (RightTrigger <= TRIGGERHALFPRESSED):
+        MotorController.Burnout(0, 50, 0.1)
+    # Third gear 75% throttle.
+    elif (RightTrigger > TRIGGERHALFPRESSED) and (RightTrigger <= TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(0, 75, 0.1)
+    # Fourth gear full throttle.
+    elif (RightTrigger > TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(0, 100, 0.1)
+    # Return back to the ControllerRoutines function.
+    return     
+
+# This function creates digital 4-speed PWM rear wheel drive transmission and reduces the front
+# two motors to a crawling speed so that the AxiosRoboticsRCv1 unit can perform a rolling burnout
+# moving forward slowly while the rear wheels have 4-speed independent control.
+# This function is an easter egg which is activated by pressing the Xbox logo button on the 360 controller.
+def RollingBurnoutMode():
+    # First gear 25% throttle.
+    if (RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERQTRPRESSED):
+        MotorController.Burnout(4, 25, 0.1)
+    # Second gear 50% throttle.
+    elif (RightTrigger > TRIGGERQTRPRESSED) and (RightTrigger <= TRIGGERHALFPRESSED):
+        MotorController.Burnout(4, 50, 0.1)
+    # Third gear 75% throttle.    
+    elif (RightTrigger > TRIGGERHALFPRESSED) and (RightTrigger <= TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(4, 75, 0.1)
+    # Fourth gear full throttle.    
+    elif (RightTrigger > TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(4, 75, 0.1)
+    # Return back to the ControllerRoutines function.
+    return      
+    
+
 
 # This function stops the current drive trajectory when a collision is detected,
 # stops the AxiosRobtocisRCv1 unit in its tracks. Alerts the operator which side the potential
@@ -35,7 +75,7 @@ SelfDrivingAIActive = False
 def AvoidCollision(side):
     # Stop all motors.
     MotorController.StopMotors()
-    # Turn on left indicator to show which side the obstacle was detected on.
+    # Turn on the respective indicator to show which side the obstacle was detected on.
     TaillightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
     MotorController.DriveBackwards(100, 0.3)
@@ -43,8 +83,43 @@ def AvoidCollision(side):
     TaillightController.IndicatorLightsOff(side)
     # Return back to the ControllerRoutines function.
     return 
-    
 
+
+# This function is used by the self driving AI routine, this is called when entrapment has been detected,
+# this is designed to allow the AxiosRoboticsRCv1 unit to navigate itself out of a corner or crowded space.
+def AvoidEntrapment(side):
+    # Stop all motors.
+    MotorController.StopMotors()
+    # Turn on the respective indicator to show which side the obstacle was detected on.
+    TaillightController.IndicatorLightsOn(100, side)
+    # Drive backwards for 0.4 seconds to avoid obstacle.
+    MotorController.DriveBackwards(100, 0.4)
+    # Turn off indicator after this routine has finished.
+    TaillightController.IndicatorLightsOff(side)
+    # Turn 90 degrees and continue
+    if(side == "LEFT"):
+        MotorController.PivotLeft(100, 0.6)
+    elif(side == "RIGHT"):
+        MotorController.PivotRight(100, 0.6)
+     # Return back to the ControllerRoutines function.
+    return 
+
+def AvoidObstacle(side):
+    # Stop all motors.
+    MotorController.StopMotors()
+    # Turn on the respective indicator to show which side the obstacle was detected on.
+    TaillightController.IndicatorLightsOn(100, side)
+    # Drive backwards for 0.3 seconds to avoid obstacle.
+    MotorController.DriveBackwards(50, 0.5)
+    # Turn off indicator after this routine has finished.
+    TaillightController.IndicatorLightsOff(side)
+      # Turn briefly and continue
+    if(side == "LEFT"):
+        MotorController.TurnLeft(100, 0.6)
+    elif(side == "RIGHT"):
+        MotorController.TurnRight(100, 0.6)
+    # Return back to the ControllerRoutines function.
+    return 
 
 # The AxiosRoboticsRCv1 unit will enter an infinite loop and will drive around,
 # endlessly avoiding collisions and entrapment in corners.
@@ -59,91 +134,63 @@ def SelfDrivingAI():
         # to normal operation.
         if Controller.leftBumper():
             MotorController.StopMotors()
-        # If entrapment is detected by the left sensor, reverse and turn left to,
-        # navigate out of the corner.    
+            SelfDrivingAIActive = False    
+        # If entrapment is detected by reverse and turn to navigate out of the corner.
+        # Entrapment by left side.    
         elif (LeftSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):
-            # Stop all motors.
-            MotorController.StopMotors()
-            # Turn on the left indicator to show which side the obstacle was detected on.
-            TaillightController.IndicatorLightsOn(100, "LEFT")
-            # Drive backwards for 0.4 seconds to avoid obstacle.
-            MotorController.DriveBackwards(100, 0.4)
-            # Turn left briefly and continue.
-            MotorController.TurnLeft(100, 0.6)
-            # Turn off indicator after this routine has finished.
-            TaillightController.IndicatorLightsOff("LEFT")
+            AvoidEntrapment("LEFT")
             LeftSensorDetectionCount = 0
-           
-        # If entrapment is detected by the right sensor, reverse and turn right to,
-        # navigate out of the corner.      
+         # Entrapment by right side.       
         elif (RightSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):
-            # Stop all motors.
-            MotorController.StopMotors()
-            # Turn on the right indicator to show which side the obstacle was detected on.
-            TaillightController.IndicatorLightsOn(100, "RIGHT")
-            # Drive backwards for 0.4 seconds to avoid obstacle.
-            MotorController.DriveBackwards(100, 0.4)
-            # Turn right briefly and continue.
-            MotorController.TurnRight(100, 0.6)
-            # Turn off indicator after this routine has finished.
-            TaillightController.IndicatorLightsOff("RIGHT")
-            RightSensorDetectionCount = 0
-            
-        # Object detected on left side, avoid obstacle.    
-        elif GPIO.input(LeftalrtAI) == 1:
-                        # Tail Light setup
-                        leftbrake(100)
-                        rightbrake(0)
-                        leftind(100)
-                        rightind(100)
-                        # Movment Functions
-                        frontspeed(50)
-                        backspeed(50)
-                        rightcount = 0
-                        leftcount += 1
-                        rev(0.5)
-                        pivotleft(0.3)    
-            
-            
-            
-            
-            
-        elif GPIO.input(RightalrtAI) == 1:
-            
-            
-            
-            
-            
-            
-            
-                        # Tail Light setup
-                        leftbrake(0)
-                        rightbrake(100)
-                        leftind(100)
-                        rightind(100)
-                        # Movment Functions
-                        frontspeed(50)
-                        backspeed(50)
-                        leftcount = 0
-                        rightcount += 1
-                        rev(0.5)
-                        pivotright(0.3)
-                        
-                        
-                        
-                  
-                    else:
-                        # Tail Light setup
-                        leftbrake(0)
-                        rightbrake(0)
-                        leftind(0)
-                        rightind(0)
-                        # Movment Functions
-                        frontspeed(100)
-                        backspeed(100)
-                        fwd(0.1)
+            AvoidEntrapment("RIGHT")
+            RightSensorDetectionCount = 0 
+        # Avoid all obstacles.    
+        # Object detected on left side avoid obstacle.    
+        elif (GPIO.input(LeftalrtAI) == 1):
+            AvoidObstacle("LEFT")
+        # Object detected on right side avoid obstacle.    
+        elif (GPIO.input(RightalrtAI) == 1):
+            AvoidObstacle("RIGHT")   
+        # Drive forwards at full speed if no objects are detected.    
+        else:
+            MotorController.DriveForwards(100, 0.1)
+    # Return back to the ControllerRoutines function.
+    return 
 
-
+def RGBHeadLightDPadRoutine():
+              if RGB == 0:
+                RGB = 1
+                select = 1
+                RGBcolorcycle(select)
+                time.sleep(1)
+            elif RGB == 1:
+                RGB = 0
+                redLED("OFF")
+                greenLED("OFF")
+                blueLED("OFF")
+                time.sleep(1)
+                # Cycle Back Through colours
+            elif Controller.dpadLeft():
+                if select > 1:
+                    select -= 1
+                    RGBcolorcycle(select)
+                    time.sleep(1)
+                elif select == 1:
+                    select = 8
+                    RGBcolorcycle(select)
+                    time.sleep(1)
+            # Cycle Forward Through colours
+            elif Controller.dpadRight():
+                if select < 8:
+                    select += 1
+                    RGBcolorcycle(select)
+                    time.sleep(1)
+                elif select == 8:
+                    select = 1
+                    RGBcolorcycle(select)
+                    time.sleep(1)
+    
+    
 def ControllerRoutines():
     # Global variable linkage.
     global CameraModuleUsed
@@ -196,21 +243,13 @@ def ControllerRoutines():
                 time.sleep(1)
         
         # Collision avoidance checks.
-        # Prevent Collision Detected By Left Sensor.
         elif CollisionAvoidanceOn:
+            # Prevent Collision Detected By Left Sensor.
             if(GPIO.input(LeftalrtReg) == 1):
-         
-                    
+                AvoidCollision("LEFT")        
             # Prevent Collision Detected By Right Sensor
             elif (GPIO.input(RightalrtReg) == 1):
-                # Stop all motors.
-                MotorController.StopMotors()
-                # Turn on right indicator to show which side the obstacle was detected on.
-                TaillightController.IndicatorLightsOn(100, "RIGHT")
-                # Drive backwards for 0.3 seconds to avoid obstacle.
-                MotorController.DriveBackwards(100, 0.3)
-                # Turn off indicator after this routine has finished.
-                TaillightController.IndicatorLightsOff("RIGHT")
+                AvoidCollision("RIGHT")  
 
         # Guide button activates rolling burnout easter egg mode.
         elif Controller.Guide():
@@ -258,34 +297,11 @@ def ControllerRoutines():
         # Check for special drive mode overrides first. 
         # 4-Speed Rear Wheel Drive Mode.
         elif RearWheelDriveBurnoutEnabled:
-             # First gear 25% throttle.
-            if(RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERQTRPRESSED):
-                MotorController.Burnout(0, 25, 0.1)
-            # Second gear 50% throttle.
-            elif (RightTrigger > TRIGGERQTRPRESSED) and (RightTrigger <= TRIGGERHALFPRESSED):
-                MotorController.Burnout(0, 50, 0.1)
-            # Third gear 75% throttle.
-            elif (RightTrigger > TRIGGERHALFPRESSED) and (RightTrigger <= TRIGGERTHREEQTRPRESSED):
-                MotorController.Burnout(0, 75, 0.1)
-            # Fourth gear full throttle.
-            elif (RightTrigger > TRIGGERTHREEQTRPRESSED):
-                MotorController.Burnout(0, 100, 0.1)
-                
+            RearWheelDriveBurnout()            
         # 4-speed rolling burnout easter egg drive mode.        
         elif RollingBurnoutModeEnabled:
-            # First gear 25% throttle.
-            if (RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERQTRPRESSED):
-                MotorController.Burnout(4, 25, 0.1)
-            # Second gear 50% throttle.
-            elif (RightTrigger > TRIGGERQTRPRESSED) and (RightTrigger <= TRIGGERHALFPRESSED):
-                MotorController.Burnout(4, 50, 0.1)
-            # Third gear 75% throttle.    
-            elif (RightTrigger > TRIGGERHALFPRESSED) and (RightTrigger <= TRIGGERTHREEQTRPRESSED):
-                MotorController.Burnout(4, 75, 0.1)
-            # Fourth gear full throttle.    
-            elif (RightTrigger > TRIGGERTHREEQTRPRESSED):
-                MotorController.Burnout(4, 75, 0.1)
-        
+            RollingBurnoutMode
+            
         # 2-speed all wheel drive mode.
         elif (not RearWheelDriveBurnoutEnabled) and (not RollingBurnoutModeEnabled):
             # Low gear 30% throttle.
@@ -298,14 +314,15 @@ def ControllerRoutines():
         # Right brake/reverse trigger logic.        
         # Reverse 2-speed
         elif (LeftTrigger > TRIGGERDEADZONE) and (LeftTrigger <= TRIGGERHALFPRESSED):
-                MotorController.DriveBackwards(30, 0.1)
+            MotorController.DriveBackwards(30, 0.1)
         
         elif (LeftTrigger > TRIGGERHALFPRESSED):
             MotorController.DriveBackwards(100, 0.1)
                          
         # Left bumper activates the self driving mode.
         elif Controller.leftBumper() and CollisionAvoidanceOn:
-
+            SelfDrivingAI()
+            
         # RGB Headlight Dpad Integration
         elif Controller.dpadUp():
             if RGB == 0:

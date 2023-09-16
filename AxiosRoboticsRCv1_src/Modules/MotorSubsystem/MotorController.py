@@ -225,12 +225,12 @@ def StopMotors():
     
 
 
-def Burnout(speed, duration):
+def Burnout(frontspeed, rearspeed,duration):
     # Tail light controls.
     TailLightController.IndicatorLightsOn(FullBrightness)
     # Speed controls.
-    FrontMtrSpeed(speed)
-    RearMtrSpeed(speed)
+    FrontMtrSpeed(frontspeed)
+    RearMtrSpeed(rearspeed)
     # Motor controls.
     # Front motors.
     GPIO.output(FRONTLEFTMTRFORWARDPIN, True)
