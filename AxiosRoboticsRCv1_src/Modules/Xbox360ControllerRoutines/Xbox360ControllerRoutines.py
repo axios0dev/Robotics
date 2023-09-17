@@ -3,10 +3,12 @@ import os
 from typing import Final
 from time import sleep
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerDebouncer
 from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
+
 
 import pydevd
 
@@ -22,10 +24,6 @@ TRIGGERHALFPRESSED: Final[float] = 0.50
 TRIGGERTHREEQTRPRESSED: Final[float] = 0.75
 TRIGGERFULLPRESSED: Final[int] = 1
 DETECTIONSUNTILENTRAPMENT: Final[int] = 3
-
-
-
-
 
 HEADLIGHTCOLOURS: Final = ["RED", "GREEN", "BLUE", "YELLOW", "CYAN", "Magenta", "WHITE", "ORANGE"]
 HEADLIGHTCOLOURSLENGTH: Final[int] = len(HEADLIGHTCOLOURS)
@@ -134,7 +132,7 @@ def RollingBurnoutMode(RightTriggerVal):
         MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 75, 0.1)
     # Fourth gear full throttle.    
     elif (RightTriggerVal > TRIGGERTHREEQTRPRESSED):
-        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 75, 0.1)
+        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 100, 0.1)
     # Return back to the ControllerRoutines function.
     return      
 
@@ -233,6 +231,7 @@ def SelfDrivingAI():
     # Return back to the ControllerRoutines function.
     return 
 
+ControllerDebouncer = Xbox360ControllerDebouncer.Debouncer(Controller)
    
 def StartControllerRoutines():
     # Global variable linkage.
@@ -244,6 +243,8 @@ def StartControllerRoutines():
     global TwoSpeedModeEnabled
     
     while True:
+        
+        ControllerDebouncer.CheckForButtonRelease()
         
         if (not RollingBurnoutModeEnabled) and (not RearWheelDriveBurnoutEnabled):
             TwoSpeedModeEnabled = True
@@ -311,6 +312,9 @@ def StartControllerRoutines():
                 
         # A button activates/deactivates the rear wheel drive 4-speed burnout mode.
         elif Controller.A():
+            
+            ControllerDebouncer.SetButtonAPressed()
+            
             if (not RollingBurnoutModeEnabled):
                 if not RearWheelDriveBurnoutEnabled:
                     RearWheelDriveBurnoutEnabled = True
