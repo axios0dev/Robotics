@@ -55,9 +55,20 @@ class Debouncer:
             
         if(not self.LocalControllerObject.Back()):
             self.ButtonBackPressed = False
-            print("back not pressed")          
             
+        if(not self.LocalControllerObject.dpadUp()):
+            self.DPadUpPressed = False
             
+        if(not self.LocalControllerObject.dpadDown()):
+            self.DPadDownPressed = False
+
+        if(not self.LocalControllerObject.dpadLeft()):
+            self.DPadLeftPressed = False 
+            
+        if(not self.LocalControllerObject.dpadRight()):
+            self.DPadRightPressed = False                         
+                         
+                
             
     def SetButtonAPressed(self):
         self.ButtonAPressed = True
@@ -84,4 +95,17 @@ class Debouncer:
         self.ButtonStartPressed = True  
         
     def SetButtonBackPressed(self):
-        self.ButtonBackPressed = True      
+        self.ButtonBackPressed = True   
+        
+    def SetButtonDpadUpPressed(self):
+        self.DPadUpPressed = True   
+        
+    def SetButtonDpadDownPressed(self):
+        self.DPadDownPressed = True  
+        
+    def SetButtonDpadLeftPressed(self):
+        self.DPadLeftPressed = True      
+      
+    def SetButtonDpadRightPressed(self):
+        self.DPadRightPressed = True       
+                

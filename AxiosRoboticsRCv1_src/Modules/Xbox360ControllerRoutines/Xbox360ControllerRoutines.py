@@ -396,16 +396,26 @@ def StartControllerRoutines():
             SelfDrivingAI()
             
         # RGB Headlight Dpad Integration
-        elif Controller.dpadUp():
+        elif Controller.dpadUp() and (not ControllerDebouncer.DPadUpPressed):
+            
+            ControllerDebouncer.SetButtonDpadUpPressed()
+            
             if (not RGBHeadLightOn):
                 RGBHeadLightDPadRoutine("ON")
             elif RGBHeadLightOn:
                 RGBHeadLightDPadRoutine("OFF")   
         # Cycle Back Through colours
-        elif Controller.dpadLeft():
+        elif Controller.dpadLeft() and (not ControllerDebouncer.DPadLeftPressed):
+            
+            ControllerDebouncer.SetButtonDpadLeftPressed()
+           
             RGBHeadLightDPadRoutine("PREV")
+            
         # Cycle Forward Through colours
-        elif Controller.dpadRight():
+        elif Controller.dpadRight() and (not ControllerDebouncer.DPadRightPressed):
+            
+            ControllerDebouncer.SetButtonDpadRightPressed()
+      
             RGBHeadLightDPadRoutine("NEXT")
                
         # Default Case For No Current Input
