@@ -258,7 +258,10 @@ def StartControllerRoutines():
         
         # Button action mapping tree.
         # Back button shuts down the unit.
-        if Controller.Back():
+        if Controller.Back() and (not ControllerDebouncer.ButtonBackPressed):
+            
+            ControllerDebouncer.SetButtonBackPressed()
+        
             # Run the clean up tasks for the camera controller.
             if CameraModuleUsed:
                 CameraController.ServerCleanUp()    
@@ -270,16 +273,25 @@ def StartControllerRoutines():
             Controller.close()
             sleep(1)
             # Shutdown the pi zero motherboard.
-            #call("sudo nohup shutdown -h now", shell=True)
+            #call("sudo shutdown now", shell=True)
+            
             
         # Start button starts the live video feed from the camera controller.
-        elif Controller.Start():
-            CameraModuleUsed = True
+        elif Controller.Start() and (not ControllerDebouncer.ButtonStartPressed):
+            
+            ControllerDebouncer.SetButtonStartPressed()
+       
+            if(not CameraModuleUsed):
+                CameraModuleUsed = True
+                
             CameraController.VideoStreamStart()
             
         # Y button powers on/off the front ultrasonic distance sensor module and,
         # enables/disables dual collision avoidance. 
-        elif Controller.Y():
+        elif Controller.Y() and (not ControllerDebouncer.ButtonYPressed):
+            
+            ControllerDebouncer.SetButtonYPressed()
+        
             # Turn on collision avoidance.
             if not CollisionAvoidanceOn:
                 CollisionAvoidanceOn = True
@@ -303,7 +315,10 @@ def StartControllerRoutines():
                 AvoidCollision("RIGHT")  
 
         # Guide button activates rolling burnout easter egg mode.
-        elif Controller.Guide():
+        elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
+            
+            ControllerDebouncer.SetButtonGuidePressed()
+            
             if (not RearWheelDriveBurnoutEnabled):
                 if (not RollingBurnoutModeEnabled):
                     RollingBurnoutModeEnabled = True
@@ -311,7 +326,7 @@ def StartControllerRoutines():
                     RollingBurnoutModeEnabled = False
                 
         # A button activates/deactivates the rear wheel drive 4-speed burnout mode.
-        elif Controller.A():
+        elif Controller.A() and (not ControllerDebouncer.ButtonAPressed):
             
             ControllerDebouncer.SetButtonAPressed()
             
@@ -375,7 +390,9 @@ def StartControllerRoutines():
             MotorController.DriveBackwards(100, 0.1)
                          
         # Left bumper activates the self driving mode.
-        elif Controller.leftBumper() and CollisionAvoidanceOn:
+        elif (Controller.leftBumper() and CollisionAvoidanceOn) and (not ControllerDebouncer.ButtonLBPressed):
+            
+            ControllerDebouncer.SetButtonLBPressed()
             SelfDrivingAI()
             
         # RGB Headlight Dpad Integration
