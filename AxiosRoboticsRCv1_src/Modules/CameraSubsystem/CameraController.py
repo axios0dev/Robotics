@@ -15,16 +15,20 @@ camera.resolution = (640, 480)
 camera.framerate = (24)
 sleep(2)
 
-# TCP socket server setup. 
-server_socket = socket.socket()
-server_socket.bind(('0.0.0.0', 8000))
-server_socket.listen(0)
-connection = server_socket.accept()[0].makefile('wb')
+
+StreamServerOnline = False
+
 # State flag to keep track of when the camera module resource is in use,
 # by this controller.
 CameraCurrentlyRecording = False
 
-
+def StreamServerStart():
+    # TCP socket server setup. 
+    server_socket = socket.socket()
+    server_socket.bind(('0.0.0.0', 8000))
+    server_socket.listen(0)
+    connection = server_socket.accept()[0].makefile('wb')
+    
 # Start streaming over the TCP connection file descriptor.
 def VideoStreamStart():
     global CameraCurrentlyRecording

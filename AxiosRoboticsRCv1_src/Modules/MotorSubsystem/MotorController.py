@@ -73,6 +73,10 @@ def RearMtrSpeed(speed):
 
 # Movement functions.
 def DriveForward(speed, duration):
+    
+    TailLightController.BrakeLightsOff()
+    TailLightController.IndicatorLightsOff()
+    
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -88,11 +92,12 @@ def DriveForward(speed, duration):
     GPIO.output(RearRightMtrForwardPin, True)
     GPIO.output(RearRightMtrReversePin, False)
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
 
     
 def DriveBackwards(speed, duration):
+    
+    TailLightController.IndicatorLightsOff()
+    
     # Tail light controls.
     TailLightController.BrakeLightsOn(speed)
     # Speed controls.
@@ -110,12 +115,13 @@ def DriveBackwards(speed, duration):
     GPIO.output(RearRightMtrForwardPin, False)  
     GPIO.output(RearRightMtrReversePin, True)  
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
-    TailLightController.BrakeLightsOff()
 
     
 def TurnLeft(speed, duration):
+    
+    TailLightController.BrakeLightsOff()
+    TailLightController.IndicatorLightsOff("RIGHT")
+    
     # Tail light controls.
     TailLightController.IndicatorLightsOn(FullBrightness, "LEFT")
     # Speed controls.
@@ -133,12 +139,13 @@ def TurnLeft(speed, duration):
     GPIO.output(RearRightMtrForwardPin, True)
     GPIO.output(RearRightMtrReversePin, False)
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
-    TailLightController.IndicatorLightsOff("LEFT")
 
     
 def PivotLeft(speed, duration):
+    
+    TailLightController.BrakeLightsOff()
+    TailLightController.IndicatorLightsOff("RIGHT")
+    
     # Tail light controls.
     TailLightController.IndicatorLightsOn(speed, "LEFT")
     # Speed controls.
@@ -156,12 +163,13 @@ def PivotLeft(speed, duration):
     GPIO.output(RearRightMtrForwardPin, True)  
     GPIO.output(RearRightMtrReversePin, False)  
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
-    TailLightController.IndicatorLightsOff("LEFT")
 
 
 def TurnRight(speed, duration):
+    
+    TailLightController.BrakeLightsOff()
+    TailLightController.IndicatorLightsOff("LEFT")
+    
     # Tail light controls.
     TailLightController.IndicatorLightsOn(FullBrightness, "RIGHT")
     # Speed controls.
@@ -179,14 +187,15 @@ def TurnRight(speed, duration):
     GPIO.output(RearRightMtrForwardPin, False)  
     GPIO.output(RearRightMtrReversePin, False)  
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
-    TailLightController.IndicatorLightsOff("RIGHT")
 
 
 def PivotRight(speed, duration):
+    
+    TailLightController.BrakeLightsOff()
+    TailLightController.IndicatorLightsOff("LEFT")
+    
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(FullBrightness, "RIGHT")
+    TailLightController.IndicatorLightsOn(speed, "RIGHT")
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -202,35 +211,38 @@ def PivotRight(speed, duration):
     GPIO.output(RearRightMtrForwardPin, False)
     GPIO.output(RearRightMtrReversePin, True)
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
-    TailLightController.IndicatorLightsOff("RIGHT")
 
 
 def StopMotors():
+    
+    TailLightController.IndicatorLightsOff()
+    
     # Turn on brake lights.
     TailLightController.BrakeLightsOn(FullBrightness)
     # Front motors.
-    GPIO.output(FRONTLEFTMTRFORWARDPIN, False)
-    GPIO.output(FrontLeftMtrReversePin, False)  
-    GPIO.output(FrontRightMtrForwardPin, False)  
-    GPIO.output(FrontRightMtrReversePin, False)  
+    GPIO.output(FRONTLEFTMTRFORWARDPIN, True)
+    GPIO.output(FrontLeftMtrReversePin, True)  
+    GPIO.output(FrontRightMtrForwardPin, True)  
+    GPIO.output(FrontRightMtrReversePin, True)  
     # Rear motors.
-    GPIO.output(RearLeftMtrForwardPin, False)  
-    GPIO.output(RearLeftMtrReversePin, False)  
-    GPIO.output(RearRightMtrForwardPin, False)  
-    GPIO.output(RearRightMtrReversePin, False)
+    GPIO.output(RearLeftMtrForwardPin, True)  
+    GPIO.output(RearLeftMtrReversePin, True)  
+    GPIO.output(RearRightMtrForwardPin, True)  
+    GPIO.output(RearRightMtrReversePin, True)
     # Pin state clean up.
-    TailLightController.BrakeLightsOff()
+    #TailLightController.BrakeLightsOff()
     
 
 
-def Burnout(frontspeed, rearspeed,duration):
+def Burnout(speed,duration):
+    
+    TailLightController.BrakeLightsOff()
+    
     # Tail light controls.
     TailLightController.IndicatorLightsOn(FullBrightness)
     # Speed controls.
-    FrontMtrSpeed(frontspeed)
-    RearMtrSpeed(rearspeed)
+    FrontMtrSpeed(0)
+    RearMtrSpeed(speed)
     # Motor controls.
     # Front motors.
     GPIO.output(FRONTLEFTMTRFORWARDPIN, True)
@@ -243,6 +255,24 @@ def Burnout(frontspeed, rearspeed,duration):
     GPIO.output(RearRightMtrForwardPin, True)  
     GPIO.output(RearRightMtrReversePin, False)  
     sleep(duration)
-    # Pin state clean up.
-    StopMotors()
-    TailLightController.IndicatorLightsOff()
+    
+    
+def RollingBurnout(frontspeed, rearspeed, duration):
+    TailLightController.BrakeLightsOff()
+    # Tail light controls.
+    TailLightController.IndicatorLightsOn(FullBrightness)
+    # Speed controls.
+    FrontMtrSpeed(frontspeed)
+    RearMtrSpeed(rearspeed)
+    # Motor controls.
+    # Front motors.
+    GPIO.output(FRONTLEFTMTRFORWARDPIN, True)
+    GPIO.output(FrontLeftMtrReversePin, False)  
+    GPIO.output(FrontRightMtrForwardPin, True)  
+    GPIO.output(FrontRightMtrReversePin, False)
+    # Rear motors.
+    GPIO.output(RearLeftMtrForwardPin, True)  
+    GPIO.output(RearLeftMtrReversePin, False)  
+    GPIO.output(RearRightMtrForwardPin, True)  
+    GPIO.output(RearRightMtrReversePin, False)  
+    sleep(duration)

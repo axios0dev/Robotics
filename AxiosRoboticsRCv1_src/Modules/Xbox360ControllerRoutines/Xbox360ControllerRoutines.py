@@ -1,44 +1,52 @@
 #!/usr/bin/env python3
 import os 
 from typing import Final
-from Modules.Xbox360ControllerRoutines import xbox
+from time import sleep
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
-from Modules.LedSubsystem import TaillightController
-from Modules.MotorSubystem import MotorController
+from Modules.LedSubsystem import TailLightController
+from Modules.MotorSubsystem import MotorController
+
+import pydevd
+
 # Initialize the controller object.
-Controller = xbox.Joystick()
+Controller = Xbox360ControllerAPI.Joystick()
 
 LEFTJOYSTICKDEADZONE: Final[float] = 0.4
 RIGHTJOYSTICKDEADZONE: Final[float] = 0.2
 RIGHTJOYSTICKHALFPOS: Final[float] = 0.6
-TRIGGERDEADZONE: Final[float] = 0.1
+TRIGGERDEADZONE: Final[float] = 0.2
 TRIGGERQTRPRESSED: Final[float] = 0.25
 TRIGGERHALFPRESSED: Final[float] = 0.50
 TRIGGERTHREEQTRPRESSED: Final[float] = 0.75
 TRIGGERFULLPRESSED: Final[int] = 1
 DETECTIONSUNTILENTRAPMENT: Final[int] = 3
 
+
+
+
+
 HEADLIGHTCOLOURS: Final = ["RED", "GREEN", "BLUE", "YELLOW", "CYAN", "Magenta", "WHITE", "ORANGE"]
+HEADLIGHTCOLOURSLENGTH: Final[int] = len(HEADLIGHTCOLOURS)
 # Default headlight colour on startup.
-# Currently: Cyan
-DEFAULTHEADLIGHTCOLOUR: Final[int] = 4
+DEFAULTHEADLIGHTCOLOUR: Final[str] = "CYAN"
+CurrentRGBHeadlightColourSelected = HEADLIGHTCOLOURS.index(DEFAULTHEADLIGHTCOLOUR)
+# Turn on the RGB headlights at their currently set default colour.
+HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+RGBHeadLightOn = True
 
 # Global state flag variables.
 CameraModuleUsed = False
 CollisionAvoidanceOn = False
 RollingBurnoutModeEnabled = False
 RearWheelDriveBurnoutEnabled = False
+TwoSpeedModeEnabled = False
 SelfDrivingAIActive = False
-
-RGBHeadLightOn = False
-RBGHeadLightChangedFromDefault = False
-CurrentRGBHeadlightColourSelected
 
 
 def RGBHeadLightDPadRoutine(state):
     global RGBHeadLightOn
-    global RBGHeadLightChangedFromDefault
     global CurrentRGBHeadlightColourSelected
     
     if(state == "OFF"):
@@ -48,23 +56,27 @@ def RGBHeadLightDPadRoutine(state):
         return 
     elif(state == "ON"):
         RGBHeadLightOn = True
+        HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+        # Return back to the ControllerRoutines function.
+        return   
     
     if(state == "NEXT"):
         Selection = 1
     elif(state == "PREV"):
         Selection = -1 
-           
-    if not RBGHeadLightChangedFromDefault:
-        if((HEADLIGHTCOLOURS.index(DEFAULTHEADLIGHTCOLOUR) + Selection) >= (HEADLIGHTCOLOURS.len() - 1)):
-            CurrentRGBHeadlightColourSelected = 0
-        else: 
-            CurrentRGBHeadlightColourSelected = (HEADLIGHTCOLOURS.index(DEFAULTHEADLIGHTCOLOUR) + Selection)
-            
-    else:
-        if((HEADLIGHTCOLOURS.index(CurrentRGBHeadlightColourSelected) + Selection) >= (HEADLIGHTCOLOURS.len() - 1)):
-            CurrentRGBHeadlightColourSelected = 0
-        else: 
-            CurrentRGBHeadlightColourSelected = (HEADLIGHTCOLOURS.index(CurrentRGBHeadlightColourSelected) + Selection)
+         
+    if((CurrentRGBHeadlightColourSelected + Selection) < 0):
+        CurrentRGBHeadlightColourSelected = HEADLIGHTCOLOURSLENGTH-1    
+        
+    # Check if the selection is beyond the last colour avalible, then wrap around back to the first.    
+    elif((CurrentRGBHeadlightColourSelected + Selection) >= HEADLIGHTCOLOURSLENGTH):
+        CurrentRGBHeadlightColourSelected = 0
+              
+    else: 
+        CurrentRGBHeadlightColourSelected = (CurrentRGBHeadlightColourSelected + Selection)
+        
+    print("new colour")
+    print(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
         
     HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
     # Return back to the ControllerRoutines function.
@@ -74,40 +86,55 @@ def RGBHeadLightDPadRoutine(state):
 # This function creates digital 4-speed PWM rear wheel drive transmission and disables the front
 # two motors so that the AxiosRoboticsRCv1 unit can perform a variable speed standing
 # burnout.  
-def RearWheelDriveBurnout():
+def RearWheelDriveBurnout(RightTriggerVal):
+    # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
+    if(RightTriggerVal <= TRIGGERDEADZONE):
+        # Stop all motors.
+        MotorController.StopMotors()
+        return
+    
     # First gear 25% throttle.
-    if(RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERQTRPRESSED):
-        MotorController.Burnout(0, 25, 0.1)
+    elif(RightTriggerVal > TRIGGERDEADZONE) and (RightTriggerVal <= TRIGGERQTRPRESSED):
+        MotorController.Burnout(25, 0.1)
     # Second gear 50% throttle.
-    elif (RightTrigger > TRIGGERQTRPRESSED) and (RightTrigger <= TRIGGERHALFPRESSED):
-        MotorController.Burnout(0, 50, 0.1)
+    elif (RightTriggerVal > TRIGGERQTRPRESSED) and (RightTriggerVal <= TRIGGERHALFPRESSED):
+        MotorController.Burnout(50, 0.1)
     # Third gear 75% throttle.
-    elif (RightTrigger > TRIGGERHALFPRESSED) and (RightTrigger <= TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(0, 75, 0.1)
+    elif (RightTriggerVal > TRIGGERHALFPRESSED) and (RightTriggerVal <= TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(75, 0.1)
     # Fourth gear full throttle.
-    elif (RightTrigger > TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(0, 100, 0.1)
+    elif (RightTriggerVal > TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(100, 0.1)
     # Return back to the ControllerRoutines function.
     return     
 
+
+FRONTMOTORCRAWLSPEED: Final[int] = 7
 
 # This function creates digital 4-speed PWM rear wheel drive transmission and reduces the front
 # two motors to a crawling speed so that the AxiosRoboticsRCv1 unit can perform a rolling burnout
 # moving forward slowly while the rear wheels have 4-speed independent control.
 # This function is an easter egg which is activated by pressing the Xbox logo button on the 360 controller.
-def RollingBurnoutMode():
+def RollingBurnoutMode(RightTriggerVal):
+    
+     # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
+    if(RightTriggerVal <= TRIGGERDEADZONE):
+        # Stop all motors.
+        MotorController.StopMotors()
+        return
+    
     # First gear 25% throttle.
-    if (RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERQTRPRESSED):
-        MotorController.Burnout(4, 25, 0.1)
+    if (RightTriggerVal > TRIGGERDEADZONE) and (RightTriggerVal <= TRIGGERQTRPRESSED):
+        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 25, 0.1)
     # Second gear 50% throttle.
-    elif (RightTrigger > TRIGGERQTRPRESSED) and (RightTrigger <= TRIGGERHALFPRESSED):
-        MotorController.Burnout(4, 50, 0.1)
+    elif (RightTriggerVal > TRIGGERQTRPRESSED) and (RightTriggerVal <= TRIGGERHALFPRESSED):
+        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 50, 0.1)
     # Third gear 75% throttle.    
-    elif (RightTrigger > TRIGGERHALFPRESSED) and (RightTrigger <= TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(4, 75, 0.1)
+    elif (RightTriggerVal > TRIGGERHALFPRESSED) and (RightTriggerVal <= TRIGGERTHREEQTRPRESSED):
+        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 75, 0.1)
     # Fourth gear full throttle.    
-    elif (RightTrigger > TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(4, 75, 0.1)
+    elif (RightTriggerVal > TRIGGERTHREEQTRPRESSED):
+        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 75, 0.1)
     # Return back to the ControllerRoutines function.
     return      
 
@@ -121,11 +148,11 @@ def AvoidCollision(side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TaillightController.IndicatorLightsOn(100, side)
+    TailLightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
     MotorController.DriveBackwards(100, 0.3)
     # Turn off indicator after this routine has finished.
-    TaillightController.IndicatorLightsOff(side)
+    TailLightController.IndicatorLightsOff(side)
     # Return back to the ControllerRoutines function.
     return 
 
@@ -136,11 +163,11 @@ def AvoidEntrapment(side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TaillightController.IndicatorLightsOn(100, side)
+    TailLightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.4 seconds to avoid obstacle.
     MotorController.DriveBackwards(100, 0.4)
     # Turn off indicator after this routine has finished.
-    TaillightController.IndicatorLightsOff(side)
+    TailLightController.IndicatorLightsOff(side)
     # Turn 90 degrees and continue
     if(side == "LEFT"):
         MotorController.PivotLeft(100, 0.6)
@@ -154,11 +181,11 @@ def AvoidObstacle(side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TaillightController.IndicatorLightsOn(100, side)
+    TailLightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
     MotorController.DriveBackwards(50, 0.5)
     # Turn off indicator after this routine has finished.
-    TaillightController.IndicatorLightsOff(side)
+    TailLightController.IndicatorLightsOff(side)
       # Turn briefly and continue
     if(side == "LEFT"):
         MotorController.TurnLeft(100, 0.6)
@@ -214,13 +241,15 @@ def StartControllerRoutines():
     global RollingBurnoutModeEnabled
     global RearWheelDriveBurnoutEnabled
     global SelfDrivingAIActive
-    # Turn on the RGB headlights at their currently set default colour.
-    HeadlightController.RGBColorCycle(DEFAULTHEADLIGHTCOLOUR)
-    RGBHeadLightOn = True
+    global TwoSpeedModeEnabled
     
     while True:
+        
+        if (not RollingBurnoutModeEnabled) and (not RearWheelDriveBurnoutEnabled):
+            TwoSpeedModeEnabled = True
+            
         # Live left and right trigger position values.
-        LeftTrigger = Controller.LeftTriggerer()
+        LeftTrigger = Controller.leftTrigger()
         RightTrigger = Controller.rightTrigger()
         # Live joystick X position values.
         LeftStickXPos = Controller.leftStick()[0]
@@ -235,10 +264,12 @@ def StartControllerRoutines():
             # Turn off the head light module.
             HeadlightController.LedOff()
             # Turn off the tail light module.
-            TaillightController.BrakeLightsOff()
-            TaillightController.IndicatorLightsOff()
+            TailLightController.BrakeLightsOff()
+            TailLightController.IndicatorLightsOff()
+            Controller.close()
+            sleep(1)
             # Shutdown the pi zero motherboard.
-            call("sudo nohup shutdown -h now", shell=True)
+            #call("sudo nohup shutdown -h now", shell=True)
             
         # Start button starts the live video feed from the camera controller.
         elif Controller.Start():
@@ -272,17 +303,19 @@ def StartControllerRoutines():
 
         # Guide button activates rolling burnout easter egg mode.
         elif Controller.Guide():
-            if not RollingBurnoutModeEnabled:
-                RollingBurnoutModeEnabled = True
-            elif RollingBurnoutModeEnabled:
-                RollingBurnoutModeEnabled = False
+            if (not RearWheelDriveBurnoutEnabled):
+                if (not RollingBurnoutModeEnabled):
+                    RollingBurnoutModeEnabled = True
+                elif RollingBurnoutModeEnabled:
+                    RollingBurnoutModeEnabled = False
                 
         # A button activates/deactivates the rear wheel drive 4-speed burnout mode.
         elif Controller.A():
-            if not RearWheelDriveBurnoutEnabled:
-                RearWheelDriveBurnoutEnabled = True
-            elif RearWheelDriveBurnoutEnabled:
-                RearWheelDriveBurnoutEnabled = False
+            if (not RollingBurnoutModeEnabled):
+                if not RearWheelDriveBurnoutEnabled:
+                    RearWheelDriveBurnoutEnabled = True
+                elif RearWheelDriveBurnoutEnabled:
+                    RearWheelDriveBurnoutEnabled = False
 
         # Thumbstick mapping logic.
         # Left thumbstick x-axis controls the left and right turn functionality.
@@ -316,20 +349,19 @@ def StartControllerRoutines():
         # Check for special drive mode overrides first. 
         # 4-Speed Rear Wheel Drive Mode.
         elif RearWheelDriveBurnoutEnabled:
-            RearWheelDriveBurnout()            
+            RearWheelDriveBurnout(RightTrigger)            
         # 4-speed rolling burnout easter egg drive mode.        
         elif RollingBurnoutModeEnabled:
-            RollingBurnoutMode
+            RollingBurnoutMode(RightTrigger)
             
         # 2-speed all wheel drive mode.
-        elif (not RearWheelDriveBurnoutEnabled) and (not RollingBurnoutModeEnabled):
-            # Low gear 30% throttle.
-            if (RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERHALFPRESSED):
-                MotorController.DriveForward(30, 0.1)
-            # High gear full throttle.    
-            elif (RightTrigger > TRIGGERHALFPRESSED):
-                MotorController.DriveForward(100, 0.1)
-                 
+        # Low gear 30% throttle.
+        elif TwoSpeedModeEnabled and ((RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERHALFPRESSED)):
+            MotorController.DriveForward(30, 0.1)
+        # High gear full throttle.    
+        elif TwoSpeedModeEnabled and ((RightTrigger > TRIGGERHALFPRESSED)):
+            MotorController.DriveForward(100, 0.1)
+                
         # Right brake/reverse trigger logic.        
         # Reverse 2-speed
         elif (LeftTrigger > TRIGGERDEADZONE) and (LeftTrigger <= TRIGGERHALFPRESSED):
@@ -344,7 +376,7 @@ def StartControllerRoutines():
             
         # RGB Headlight Dpad Integration
         elif Controller.dpadUp():
-            if not RGBHeadLightOn:
+            if (not RGBHeadLightOn):
                 RGBHeadLightDPadRoutine("ON")
             elif RGBHeadLightOn:
                 RGBHeadLightDPadRoutine("OFF")   
