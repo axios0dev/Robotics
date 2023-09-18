@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
+# This module contains a debouncer class which is designed to be used with the Xbox360ControllerAPI.
+# This class keeps track of each button state to ensure when a button is pressed and held it is only
+# registered as one action by the AxiosRobtoicsRCv1 unit. 
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 
+
 class Debouncer:
-    
+    # Local variable to store controller object passed by constructor.
     LocalControllerObject = None
-    
-    def __init__(self,xboxcontroller):
+
+    # Class constructor that takes an Xbox controller object.
+    def __init__(self, xboxcontroller):
         self.LocalControllerObject = xboxcontroller
         
     # Button state flags
-    # A. B. X. Y.
+    # A, B, X, Y.
     ButtonAPressed = False
     ButtonBPressed = False
     ButtonXPressed = False
     ButtonYPressed = False
-    # Shoulder Buttons.
+    #  RB, LB shoulder buttons.
     ButtonRBPressed = False
     ButtonLBPressed = False
     # Start, back, guide buttons.
     ButtonGuidePressed = False
     ButtonStartPressed = False
     ButtonBackPressed = False
-    # D-Pad buttons.
-    DPadUpPressed = False
-    DPadDownPressed = False
-    DPadLeftPressed = False
-    DPadRightPressed= False
+    # Dpad buttons.
+    DpadUpPressed = False
+    DpadDownPressed = False
+    DpadLeftPressed = False
+    DpadRightPressed = False
     
-    
+    # This function is called at the start of the Xbox360ControllerRoutines.StartControllerRoutines()
+    # loop to check if previously pressed buttons have been released and resets the appropriate state flags.
     def CheckForButtonRelease(self):
         if(not self.LocalControllerObject.A()):
             self.ButtonAPressed = False
@@ -57,19 +63,19 @@ class Debouncer:
             self.ButtonBackPressed = False
             
         if(not self.LocalControllerObject.dpadUp()):
-            self.DPadUpPressed = False
+            self.DpadUpPressed = False
             
         if(not self.LocalControllerObject.dpadDown()):
-            self.DPadDownPressed = False
+            self.DpadDownPressed = False
 
         if(not self.LocalControllerObject.dpadLeft()):
-            self.DPadLeftPressed = False 
+            self.DpadLeftPressed = False 
             
         if(not self.LocalControllerObject.dpadRight()):
-            self.DPadRightPressed = False                         
-                         
-                
-            
+            self.DpadRightPressed = False 
+                          
+    # These functions are to be called whenever a button is pressed and the corresponding action is performed
+    # on the AxiosRoboticsRCv1 unit.        
     def SetButtonAPressed(self):
         self.ButtonAPressed = True
         
@@ -98,14 +104,13 @@ class Debouncer:
         self.ButtonBackPressed = True   
         
     def SetButtonDpadUpPressed(self):
-        self.DPadUpPressed = True   
+        self.DpadUpPressed = True   
         
     def SetButtonDpadDownPressed(self):
-        self.DPadDownPressed = True  
+        self.DpadDownPressed = True  
         
     def SetButtonDpadLeftPressed(self):
-        self.DPadLeftPressed = True      
+        self.DpadLeftPressed = True      
       
     def SetButtonDpadRightPressed(self):
-        self.DPadRightPressed = True       
-                
+        self.DpadRightPressed = True                    

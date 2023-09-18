@@ -9,7 +9,6 @@ from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
 
-
 import pydevd
 
 # Initialize the controller object.
@@ -64,7 +63,7 @@ def RGBHeadLightDPadRoutine(state):
         Selection = -1 
          
     if((CurrentRGBHeadlightColourSelected + Selection) < 0):
-        CurrentRGBHeadlightColourSelected = HEADLIGHTCOLOURSLENGTH-1    
+        CurrentRGBHeadlightColourSelected = HEADLIGHTCOLOURSLENGTH - 1    
         
     # Check if the selection is beyond the last colour avalible, then wrap around back to the first.    
     elif((CurrentRGBHeadlightColourSelected + Selection) >= HEADLIGHTCOLOURSLENGTH):
@@ -108,6 +107,7 @@ def RearWheelDriveBurnout(RightTriggerVal):
 
 
 FRONTMOTORCRAWLSPEED: Final[int] = 7
+
 
 # This function creates digital 4-speed PWM rear wheel drive transmission and reduces the front
 # two motors to a crawling speed so that the AxiosRoboticsRCv1 unit can perform a rolling burnout
@@ -231,7 +231,9 @@ def SelfDrivingAI():
     # Return back to the ControllerRoutines function.
     return 
 
+
 ControllerDebouncer = Xbox360ControllerDebouncer.Debouncer(Controller)
+
    
 def StartControllerRoutines():
     # Global variable linkage.
@@ -255,6 +257,11 @@ def StartControllerRoutines():
         # Live joystick X position values.
         LeftStickXPos = Controller.leftStick()[0]
         RightStickXPos = Controller.rightStick()[0]
+              
+        print("L trigger val")
+        print(LeftTrigger)
+        print("R trigger val")
+        print(RightTrigger)
         
         # Button action mapping tree.
         # Back button shuts down the unit.
@@ -273,8 +280,7 @@ def StartControllerRoutines():
             Controller.close()
             sleep(1)
             # Shutdown the pi zero motherboard.
-            #call("sudo shutdown now", shell=True)
-            
+            # call("sudo shutdown now", shell=True)
             
         # Start button starts the live video feed from the camera controller.
         elif Controller.Start() and (not ControllerDebouncer.ButtonStartPressed):
@@ -396,7 +402,7 @@ def StartControllerRoutines():
             SelfDrivingAI()
             
         # RGB Headlight Dpad Integration
-        elif Controller.dpadUp() and (not ControllerDebouncer.DPadUpPressed):
+        elif Controller.dpadUp() and (not ControllerDebouncer.DpadUpPressed):
             
             ControllerDebouncer.SetButtonDpadUpPressed()
             
@@ -405,14 +411,14 @@ def StartControllerRoutines():
             elif RGBHeadLightOn:
                 RGBHeadLightDPadRoutine("OFF")   
         # Cycle Back Through colours
-        elif Controller.dpadLeft() and (not ControllerDebouncer.DPadLeftPressed):
+        elif Controller.dpadLeft() and (not ControllerDebouncer.DpadLeftPressed):
             
             ControllerDebouncer.SetButtonDpadLeftPressed()
            
             RGBHeadLightDPadRoutine("PREV")
             
         # Cycle Forward Through colours
-        elif Controller.dpadRight() and (not ControllerDebouncer.DPadRightPressed):
+        elif Controller.dpadRight() and (not ControllerDebouncer.DpadRightPressed):
             
             ControllerDebouncer.SetButtonDpadRightPressed()
       
