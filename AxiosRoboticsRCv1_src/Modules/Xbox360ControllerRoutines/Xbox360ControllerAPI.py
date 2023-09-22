@@ -28,6 +28,7 @@ All controller buttons are supported.  See code for all functions.
 import subprocess
 import select
 import time
+import sys
 
 class Joystick:
 
@@ -89,7 +90,7 @@ class Joystick:
                     response = self.pipe.readline()
                     # A zero length response means controller has been unplugged.
                     if len(response) == 0:
-                        raise IOError('Xbox controller disconnected from USB')
+                        print('Xbox controller disconnected from USB')
                     readable, writeable, exception = select.select([self.pipe],[],[],0)
                 # Valid controller response will be 140 chars.  
                 if len(response) == 140:
@@ -249,3 +250,4 @@ class Joystick:
     # Cleanup by ending the xboxdrv subprocess
     def close(self):
         self.proc.kill()
+        

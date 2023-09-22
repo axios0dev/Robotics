@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-import os 
+
+import RPi.GPIO as GPIO
+from os import system 
 from typing import Final
 from time import sleep
+import sys
+
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerDebouncer
 from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
+from Modules.SensorSubsystem import SmartSensorRoutines
 
 import pydevd
 
@@ -137,99 +142,44 @@ def RollingBurnoutMode(RightTriggerVal):
     return      
 
 
-# This function stops the current drive trajectory when a collision is detected,
-# stops the AxiosRobtocisRCv1 unit in its tracks. Alerts the operator which side the potential
-# collision was detected on via the indicator LED and reverses the unit to create space
-# between the unit and the object that was detected. At this point the user can regain control
-# of the unit and can decide how to best proceed.
-def AvoidCollision(side):
-    # Stop all motors.
-    MotorController.StopMotors()
-    # Turn on the respective indicator to show which side the obstacle was detected on.
-    TailLightController.IndicatorLightsOn(100, side)
-    # Drive backwards for 0.3 seconds to avoid obstacle.
-    MotorController.DriveBackwards(100, 0.3)
-    # Turn off indicator after this routine has finished.
-    TailLightController.IndicatorLightsOff(side)
-    # Return back to the ControllerRoutines function.
-    return 
 
-
-# This function is used by the self driving AI routine, this is called when entrapment has been detected,
-# this is designed to allow the AxiosRoboticsRCv1 unit to navigate itself out of a corner or crowded space.
-def AvoidEntrapment(side):
-    # Stop all motors.
-    MotorController.StopMotors()
-    # Turn on the respective indicator to show which side the obstacle was detected on.
-    TailLightController.IndicatorLightsOn(100, side)
-    # Drive backwards for 0.4 seconds to avoid obstacle.
-    MotorController.DriveBackwards(100, 0.4)
-    # Turn off indicator after this routine has finished.
-    TailLightController.IndicatorLightsOff(side)
-    # Turn 90 degrees and continue
-    if(side == "LEFT"):
-        MotorController.PivotLeft(100, 0.6)
-    elif(side == "RIGHT"):
-        MotorController.PivotRight(100, 0.6)
-     # Return back to the ControllerRoutines function.
-    return 
-
-
-def AvoidObstacle(side):
-    # Stop all motors.
-    MotorController.StopMotors()
-    # Turn on the respective indicator to show which side the obstacle was detected on.
-    TailLightController.IndicatorLightsOn(100, side)
-    # Drive backwards for 0.3 seconds to avoid obstacle.
-    MotorController.DriveBackwards(50, 0.5)
-    # Turn off indicator after this routine has finished.
-    TailLightController.IndicatorLightsOff(side)
-      # Turn briefly and continue
-    if(side == "LEFT"):
-        MotorController.TurnLeft(100, 0.6)
-    elif(side == "RIGHT"):
-        MotorController.TurnRight(100, 0.6)
-    # Return back to the ControllerRoutines function.
-    return 
-
-
-# The AxiosRoboticsRCv1 unit will enter an infinite loop and will drive around,
-# endlessly avoiding collisions and entrapment in corners.
-def SelfDrivingAI():
-    global SelfDrivingAIActive
-    SelfDrivingAIActive = True
-    # Entrapment detection variables.
-    LeftSensorDetectionCount = 0
-    RightSensorDetectionCount = 0
-    while SelfDrivingAIActive:
-        # Left bumper exists this self driving mode loop and returns.
-        # to normal operation.
-        if Controller.leftBumper():
-            MotorController.StopMotors()
-            SelfDrivingAIActive = False    
-        # If entrapment is detected by reverse and turn to navigate out of the corner.
-        # Entrapment by left side.    
-        elif (LeftSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):
-            AvoidEntrapment("LEFT")
-            LeftSensorDetectionCount = 0
-         # Entrapment by right side.       
-        elif (RightSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):
-            AvoidEntrapment("RIGHT")
-            RightSensorDetectionCount = 0 
-        # Avoid all obstacles.    
-        # Object detected on left side avoid obstacle.    
-        elif (GPIO.input(LeftalrtAI) == 1):
-            AvoidObstacle("LEFT")
-            LeftSensorDetectionCount += 1
-        # Object detected on right side avoid obstacle.    
-        elif (GPIO.input(RightalrtAI) == 1):
-            AvoidObstacle("RIGHT")
-            RightSensorDetectionCount += 1   
-        # Drive forwards at full speed if no objects are detected.    
-        else:
-            MotorController.DriveForwards(100, 0.1)
-    # Return back to the ControllerRoutines function.
-    return 
+def TwoSpeedMode(RightTriggerVal):
+    # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
+    if(RightTriggerVal <= TRIGGERDEADZONE):
+        # Stop all motors.
+        MotorController.StopMotors()
+        return
+      
+    # 2-speed all wheel drive mode.
+    # Low gear 30% throttle.
+    if (RightTriggerVal > TRIGGERDEADZONE) and (RightTriggerVal <= TRIGGERHALFPRESSED):
+        MotorController.DriveForward(30, 0.1)
+    # High gear full throttle.    
+    elif (RightTriggerVal > TRIGGERHALFPRESSED):
+            MotorController.DriveForward(100, 0.1)       
+            
+def CleanUpAndPowerDown():
+    
+    global CameraModuleUsed
+    # Run the clean up tasks for the camera controller.
+    if (CameraModuleUsed):
+        CameraController.ServerCleanUp()   
+         
+    # Turn off the head light module.
+    HeadlightController.LedOff()
+    # Turn off the tail light module.
+    TailLightController.BrakeLightsOff()
+    TailLightController.IndicatorLightsOff()
+    GPIO.cleanup()
+            
+    Controller.close()
+                
+    # Shutdown the pi zero motherboard.
+    system('systemctl poweroff')
+      
+    # Wait for the shutdown to commence.        
+    sleep(3)
+                
 
 
 ControllerDebouncer = Xbox360ControllerDebouncer.Debouncer(Controller)
@@ -248,7 +198,7 @@ def StartControllerRoutines():
         
         ControllerDebouncer.CheckForButtonRelease()
         
-        if (not RollingBurnoutModeEnabled) and (not RearWheelDriveBurnoutEnabled):
+        if (not RollingBurnoutModeEnabled) and (not RearWheelDriveBurnoutEnabled) and (not TwoSpeedModeEnabled):
             TwoSpeedModeEnabled = True
             
         # Live left and right trigger position values.
@@ -257,30 +207,19 @@ def StartControllerRoutines():
         # Live joystick X position values.
         LeftStickXPos = Controller.leftStick()[0]
         RightStickXPos = Controller.rightStick()[0]
-              
-        print("L trigger val")
-        print(LeftTrigger)
-        print("R trigger val")
-        print(RightTrigger)
         
         # Button action mapping tree.
         # Back button shuts down the unit.
         if Controller.Back() and (not ControllerDebouncer.ButtonBackPressed):
             
+            #pydevd.settrace()
+            
             ControllerDebouncer.SetButtonBackPressed()
         
-            # Run the clean up tasks for the camera controller.
-            if CameraModuleUsed:
-                CameraController.ServerCleanUp()    
-            # Turn off the head light module.
-            HeadlightController.LedOff()
-            # Turn off the tail light module.
-            TailLightController.BrakeLightsOff()
-            TailLightController.IndicatorLightsOff()
-            Controller.close()
-            sleep(1)
-            # Shutdown the pi zero motherboard.
-            # call("sudo shutdown now", shell=True)
+            CleanUpAndPowerDown()
+                 
+            
+            
             
         # Start button starts the live video feed from the camera controller.
         elif Controller.Start() and (not ControllerDebouncer.ButtonStartPressed):
@@ -299,7 +238,7 @@ def StartControllerRoutines():
             ControllerDebouncer.SetButtonYPressed()
         
             # Turn on collision avoidance.
-            if not CollisionAvoidanceOn:
+            if (not CollisionAvoidanceOn):
                 CollisionAvoidanceOn = True
                 # Turn On Sensor Managment Module
                 GPIO.output(promini, True)
@@ -315,10 +254,10 @@ def StartControllerRoutines():
         elif CollisionAvoidanceOn:
             # Prevent Collision Detected By Left Sensor.
             if(GPIO.input(LeftalrtReg) == 1):
-                AvoidCollision("LEFT")        
+                SmartSensorRoutines.AvoidCollision("LEFT")        
             # Prevent Collision Detected By Right Sensor
             elif (GPIO.input(RightalrtReg) == 1):
-                AvoidCollision("RIGHT")  
+                SmartSensorRoutines.AvoidCollision("RIGHT")  
 
         # Guide button activates rolling burnout easter egg mode.
         elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
@@ -368,25 +307,7 @@ def StartControllerRoutines():
         # Pivot right at full speed.
         elif RightStickXPos > RIGHTJOYSTICKHALFPOS:
             MotorController.PivotRight(100, 0.1) 
-            
-        # Trigger mapping logic.
-        # Left accelerate trigger logic.
-        # Check for special drive mode overrides first. 
-        # 4-Speed Rear Wheel Drive Mode.
-        elif RearWheelDriveBurnoutEnabled:
-            RearWheelDriveBurnout(RightTrigger)            
-        # 4-speed rolling burnout easter egg drive mode.        
-        elif RollingBurnoutModeEnabled:
-            RollingBurnoutMode(RightTrigger)
-            
-        # 2-speed all wheel drive mode.
-        # Low gear 30% throttle.
-        elif TwoSpeedModeEnabled and ((RightTrigger > TRIGGERDEADZONE) and (RightTrigger <= TRIGGERHALFPRESSED)):
-            MotorController.DriveForward(30, 0.1)
-        # High gear full throttle.    
-        elif TwoSpeedModeEnabled and ((RightTrigger > TRIGGERHALFPRESSED)):
-            MotorController.DriveForward(100, 0.1)
-                
+                 
         # Right brake/reverse trigger logic.        
         # Reverse 2-speed
         elif (LeftTrigger > TRIGGERDEADZONE) and (LeftTrigger <= TRIGGERHALFPRESSED):
@@ -399,7 +320,6 @@ def StartControllerRoutines():
         elif (Controller.leftBumper() and CollisionAvoidanceOn) and (not ControllerDebouncer.ButtonLBPressed):
             
             ControllerDebouncer.SetButtonLBPressed()
-            SelfDrivingAI()
             
         # RGB Headlight Dpad Integration
         elif Controller.dpadUp() and (not ControllerDebouncer.DpadUpPressed):
@@ -424,7 +344,21 @@ def StartControllerRoutines():
       
             RGBHeadLightDPadRoutine("NEXT")
                
-        # Default Case For No Current Input
-        else:
-            MotorController.StopMotors()
+               
+               
+        # Trigger mapping logic.
+        # Left accelerate trigger logic.
+        # Check for special drive mode overrides first. 
+        # 4-Speed Rear Wheel Drive Mode.
+        elif RearWheelDriveBurnoutEnabled:
+            RearWheelDriveBurnout(RightTrigger)            
+        # 4-speed rolling burnout easter egg drive mode.        
+        elif RollingBurnoutModeEnabled:
+            RollingBurnoutMode(RightTrigger)
+            
+        # 2-speed all wheel drive mode.
+        # Low gear 30% throttle.
+        elif TwoSpeedModeEnabled:
+            TwoSpeedMode(RightTrigger)
+        
            

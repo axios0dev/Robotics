@@ -4,6 +4,7 @@
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+from time import sleep
 
 # Tail light Pin Setup.
 # Left light cluster setup.
@@ -77,3 +78,13 @@ def IndicatorLightsOff(side="BOTH"):
     elif(side == "BOTH"):
         LeftIndicatorPWM.ChangeDutyCycle(0)
         RightIndicatorPWM.ChangeDutyCycle(0)    
+
+def SyncIndicators(WaitingForConnection):
+    while WaitingForConnection.is_set():
+        IndicatorLightsOn(100)
+        sleep(0.5)
+        IndicatorLightsOff()
+        sleep(0.5)
+    
+         
+    
