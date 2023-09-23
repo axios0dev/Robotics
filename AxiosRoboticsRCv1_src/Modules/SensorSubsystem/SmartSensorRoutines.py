@@ -58,6 +58,8 @@ def AvoidObstacle(side):
     return 
 
 
+DETECTIONSUNTILENTRAPMENT: Final[int] = 3
+
 # The AxiosRoboticsRCv1 unit will enter an infinite loop and will drive around,
 # endlessly avoiding collisions and entrapment in corners.
 def SelfDrivingAI():

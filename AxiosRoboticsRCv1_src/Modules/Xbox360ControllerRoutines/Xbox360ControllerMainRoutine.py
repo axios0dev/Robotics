@@ -1,34 +1,43 @@
 #!/usr/bin/env python3
 
 import RPi.GPIO as GPIO
-from os import system 
-from typing import Final
+
+
 from time import sleep
+
+
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerDebouncer
 
 from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
-from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
 from Modules.SensorSubsystem import SmartSensorRoutines
+from Modules.CommonConstantLib import CommonConstants
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerRoutines
 
 # Initialize the controller object.
 Controller = Xbox360ControllerAPI.Joystick()
 
 ControllerDebouncer = Xbox360ControllerDebouncer.Debouncer(Controller)
 
-
-LEFTJOYSTICKDEADZONE: Final[float] = 0.4
-
-
+global RGBHeadLightOn
 
 def StartControllerRoutines():
-    # Global variable linkage.
+    
+    global RGBHeadLightOn
+
     CameraModuleUsed = False
     CollisionAvoidanceOn = False
     RollingBurnoutModeEnabled = False
     RearWheelDriveBurnoutEnabled = False
     TwoSpeedModeEnabled = True
     SelfDrivingAIActive = False
+    
+    # Turn on the RGB headlights at their currently set default colour.
+    HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+    RGBHeadLightOn = True
+    CurrentRGBHeadlightColourSelected = CommonConstants.HEADLIGHTCOLOURS.index(CommonConstants.DEFAULTHEADLIGHTCOLOUR)
     
     
     
@@ -54,7 +63,7 @@ def StartControllerRoutines():
             
             ControllerDebouncer.SetButtonBackPressed()
         
-            CleanUpAndPowerDown(CameraModuleUsed)
+            Xbox360ControllerRoutines.CleanUpAndPowerDown(CameraModuleUsed)
             
         
         elif Controller.B() and (not ControllerDebouncer.ButtonBPressed):
@@ -113,22 +122,22 @@ def StartControllerRoutines():
             ControllerDebouncer.SetButtonDpadUpPressed()
             
             if (not RGBHeadLightOn):
-                RGBHeadLightDPadRoutine("ON")
+                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("ON")
             elif RGBHeadLightOn:
-                RGBHeadLightDPadRoutine("OFF")   
+                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("OFF")   
         # Cycle Back Through colours
         elif Controller.dpadLeft() and (not ControllerDebouncer.DpadLeftPressed):
             
             ControllerDebouncer.SetButtonDpadLeftPressed()
            
-            RGBHeadLightDPadRoutine("PREV")
+            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("PREV")
             
         # Cycle Forward Through colours
         elif Controller.dpadRight() and (not ControllerDebouncer.DpadRightPressed):
             
             ControllerDebouncer.SetButtonDpadRightPressed()
       
-            RGBHeadLightDPadRoutine("NEXT")
+            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("NEXT")
                        
         # Guide button activates rolling burnout easter egg mode.
         elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
@@ -165,26 +174,26 @@ def StartControllerRoutines():
         # Thumbstick mapping logic.
         # Left thumbstick x-axis controls the left and right turn functionality.
         # Turn left.
-        elif LeftStickXPos < -LEFTJOYSTICKDEADZONE:
+        elif LeftStickXPos < -CommonConstants.LEFTJOYSTICKDEADZONE:
             MotorController.TurnLeft(100, 0.1)
             # fwd(0.01)
         # Turn right.    
-        elif LeftStickXPos > LEFTJOYSTICKDEADZONE:
+        elif LeftStickXPos > CommonConstants.LEFTJOYSTICKDEADZONE:
             MotorController.TurnRight(100, 0.1)
             # fwd(0.01)
             
         
-        elif (RightStickXPos <= -RIGHTJOYSTICKDEADZONE) or (RightStickXPos >= RIGHTJOYSTICKDEADZONE):
-            PivotRoutine(RightStickXPos)    
+        elif (RightStickXPos <= -CommonConstants.RIGHTJOYSTICKDEADZONE) or (RightStickXPos >= CommonConstants.RIGHTJOYSTICKDEADZONE):
+            Xbox360ControllerRoutines.PivotRoutine(RightStickXPos)    
      
      
      
         # Right brake/reverse trigger logic.        
         # Reverse 2-speed
-        elif (LeftTrigger > TRIGGERDEADZONE) and (LeftTrigger <= TRIGGERHALFPRESSED):
+        elif (LeftTrigger > CommonConstants.TRIGGERDEADZONE) and (LeftTrigger <= CommonConstants.TRIGGERHALFPRESSED):
             MotorController.DriveBackwards(30, 0.1)
         
-        elif (LeftTrigger > TRIGGERHALFPRESSED):
+        elif (LeftTrigger > CommonConstants.TRIGGERHALFPRESSED):
             MotorController.DriveBackwards(100, 0.1)
                             
         # Trigger mapping logic.
@@ -192,13 +201,13 @@ def StartControllerRoutines():
         # Check for special drive mode overrides first. 
         # 4-Speed Rear Wheel Drive Mode.
         elif RearWheelDriveBurnoutEnabled:
-            RearWheelDriveBurnout(RightTrigger)            
+            Xbox360ControllerRoutines.RearWheelDriveBurnout(RightTrigger)            
         # 4-speed rolling burnout easter egg drive mode.        
         elif RollingBurnoutModeEnabled:
-            RollingBurnoutMode(RightTrigger)
+            Xbox360ControllerRoutines.RollingBurnoutMode(RightTrigger)
             
         # 2-speed all wheel drive mode.
         # Low gear 30% throttle.
         elif TwoSpeedModeEnabled:
-            TwoSpeedAWDMode(RightTrigger)
+            Xbox360ControllerRoutines.TwoSpeedAWDMode(RightTrigger)
         

@@ -10,69 +10,42 @@ from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
-from Modules.SensorSubsystem import SmartSensorRoutines
+from Modules.CommonConstantLib import CommonConstants
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerMainRoutine
 
 
-
-RIGHTJOYSTICKDEADZONE: Final[float] = 0.2
-RIGHTJOYSTICKHALFPOS: Final[float] = 0.6
-TRIGGERDEADZONE: Final[float] = 0.2
-TRIGGERQTRPRESSED: Final[float] = 0.25
-TRIGGERHALFPRESSED: Final[float] = 0.50
-TRIGGERTHREEQTRPRESSED: Final[float] = 0.75
-TRIGGERFULLPRESSED: Final[int] = 1
-
-
-DETECTIONSUNTILENTRAPMENT: Final[int] = 3
-
-HEADLIGHTCOLOURS: Final = ["RED", "GREEN", "BLUE", "YELLOW", "CYAN", "Magenta", "WHITE", "ORANGE"]
-HEADLIGHTCOLOURSLENGTH: Final[int] = len(HEADLIGHTCOLOURS)
-
-# Default headlight colour on startup.
-DEFAULTHEADLIGHTCOLOUR: Final[str] = "CYAN"
-
-
-CurrentRGBHeadlightColourSelected = HEADLIGHTCOLOURS.index(DEFAULTHEADLIGHTCOLOUR)
-# Turn on the RGB headlights at their currently set default colour.
-HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
-RGBHeadLightOn = True
-
-
-
-def RGBHeadLightDPadRoutine(state):
-    global RGBHeadLightOn
-    global CurrentRGBHeadlightColourSelected
+def RGBHeadLightDPadRoutine(NextState, CurrentColour):
     
-    if(state == "OFF"):
+    if(NextState == CommonConstants.LEDOFF):
         HeadlightController.LedOff()
-        RGBHeadLightOn = False
+        Xbox360ControllerMainRoutine.RGBHeadLightOn = False
         # Return back to the ControllerRoutines function.
         return 
-    elif(state == "ON"):
-        RGBHeadLightOn = True
-        HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+    elif(NextState == CommonConstants.LEDON):
+        Xbox360ControllerMainRoutine.RGBHeadLightOn = True
+        HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentColour])
         # Return back to the ControllerRoutines function.
         return   
     
-    if(state == "NEXT"):
+    if(NextState == CommonConstants.NEXTCOLOUR):
         Selection = 1
-    elif(state == "PREV"):
+    elif(NextState == CommonConstants.PREVCOLOUR):
         Selection = -1 
          
-    if((CurrentRGBHeadlightColourSelected + Selection) < 0):
-        CurrentRGBHeadlightColourSelected = HEADLIGHTCOLOURSLENGTH - 1    
+    if((CurrentColour + Selection) < CommonConstants.FIRSTCOLOURIDX):
+        CurrentColour = CommonConstants.LASTCOLOURIDX - 1    
         
     # Check if the selection is beyond the last colour avalible, then wrap around back to the first.    
-    elif((CurrentRGBHeadlightColourSelected + Selection) >= HEADLIGHTCOLOURSLENGTH):
-        CurrentRGBHeadlightColourSelected = 0
+    elif((CurrentColour + Selection) >= CommonConstants.LASTCOLOURIDX):
+        CurrentColour = CommonConstants.FIRSTCOLOURIDX
               
     else: 
-        CurrentRGBHeadlightColourSelected = (CurrentRGBHeadlightColourSelected + Selection)
+        CurrentColour = (CurrentColour + Selection)
         
     print("new colour")
-    print(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+    print(CommonConstants.HEADLIGHTCOLOURS[CurrentColour])
         
-    HeadlightController.RGBColorCycle(HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+    HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentColour])
     # Return back to the ControllerRoutines function.
     return   
 
@@ -82,28 +55,25 @@ def RGBHeadLightDPadRoutine(state):
 # burnout.  
 def RearWheelDriveBurnout(RightTriggerVal):
     # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
-    if(RightTriggerVal <= TRIGGERDEADZONE):
+    if(RightTriggerVal <= CommonConstants.TRIGGERDEADZONE):
         # Stop all motors.
         MotorController.StopMotors()
         return
     
     # First gear 25% throttle.
-    elif(RightTriggerVal > TRIGGERDEADZONE) and (RightTriggerVal <= TRIGGERQTRPRESSED):
-        MotorController.Burnout(25, 0.1)
+    elif(RightTriggerVal > CommonConstants.TRIGGERDEADZONE) and (RightTriggerVal <= CommonConstants.TRIGGERQTRPRESSED):
+        MotorController.Burnout(CommonConstants.ONEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Second gear 50% throttle.
-    elif (RightTriggerVal > TRIGGERQTRPRESSED) and (RightTriggerVal <= TRIGGERHALFPRESSED):
-        MotorController.Burnout(50, 0.1)
+    elif (RightTriggerVal > CommonConstants.TRIGGERQTRPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERHALFPRESSED):
+        MotorController.Burnout(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Third gear 75% throttle.
-    elif (RightTriggerVal > TRIGGERHALFPRESSED) and (RightTriggerVal <= TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(75, 0.1)
+    elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(CommonConstants.THREEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Fourth gear full throttle.
-    elif (RightTriggerVal > TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(100, 0.1)
+    elif (RightTriggerVal > CommonConstants.TRIGGERTHREEQTRPRESSED):
+        MotorController.Burnout(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Return back to the ControllerRoutines function.
     return     
-
-
-FRONTMOTORCRAWLSPEED: Final[int] = 7
 
 
 # This function creates digital 4-speed PWM rear wheel drive transmission and reduces the front
@@ -113,23 +83,23 @@ FRONTMOTORCRAWLSPEED: Final[int] = 7
 def RollingBurnoutMode(RightTriggerVal):
     
      # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
-    if(RightTriggerVal <= TRIGGERDEADZONE):
+    if(RightTriggerVal <= CommonConstants.TRIGGERDEADZONE):
         # Stop all motors.
         MotorController.StopMotors()
         return
     
     # First gear 25% throttle.
-    if (RightTriggerVal > TRIGGERDEADZONE) and (RightTriggerVal <= TRIGGERQTRPRESSED):
-        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 25, 0.1)
+    if (RightTriggerVal > CommonConstants.TRIGGERDEADZONE) and (RightTriggerVal <= CommonConstants.TRIGGERQTRPRESSED):
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.ONEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Second gear 50% throttle.
-    elif (RightTriggerVal > TRIGGERQTRPRESSED) and (RightTriggerVal <= TRIGGERHALFPRESSED):
-        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 50, 0.1)
+    elif (RightTriggerVal > CommonConstants.TRIGGERQTRPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERHALFPRESSED):
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Third gear 75% throttle.    
-    elif (RightTriggerVal > TRIGGERHALFPRESSED) and (RightTriggerVal <= TRIGGERTHREEQTRPRESSED):
-        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 75, 0.1)
+    elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERTHREEQTRPRESSED):
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.THREEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Fourth gear full throttle.    
-    elif (RightTriggerVal > TRIGGERTHREEQTRPRESSED):
-        MotorController.RollingBurnout(FRONTMOTORCRAWLSPEED, 100, 0.1)
+    elif (RightTriggerVal > CommonConstants.TRIGGERTHREEQTRPRESSED):
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Return back to the ControllerRoutines function.
     return      
 
@@ -137,18 +107,18 @@ def RollingBurnoutMode(RightTriggerVal):
 
 def TwoSpeedAWDMode(RightTriggerVal):
     # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
-    if(RightTriggerVal <= TRIGGERDEADZONE):
+    if(RightTriggerVal <= CommonConstants.TRIGGERDEADZONE):
         # Stop all motors.
         MotorController.StopMotors()
         return
       
     # 2-speed all wheel drive mode.
     # Low gear 30% throttle.
-    if (RightTriggerVal > TRIGGERDEADZONE) and (RightTriggerVal <= TRIGGERHALFPRESSED):
-        MotorController.DriveForward(30, 0.1)
+    if (RightTriggerVal > CommonConstants.TRIGGERDEADZONE) and (RightTriggerVal <= CommonConstants.TRIGGERHALFPRESSED):
+        MotorController.DriveForward(30, CommonConstants.DEFAULTACTIONSPEED)
     # High gear full throttle.    
-    elif (RightTriggerVal > TRIGGERHALFPRESSED):
-            MotorController.DriveForward(100, 0.1)       
+    elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED):
+            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)       
             
 def CleanUpAndPowerDown(CameraModuleUsed):
     
@@ -178,17 +148,17 @@ def PivotRoutine(RightStickXPos):
     # which supports 50% and 100% speed depending on how far the thumbstick is turned
     # in either direction.
     # Pivot left at half speed.    
-    if (RightStickXPos <= -RIGHTJOYSTICKDEADZONE) and (RightStickXPos >= -RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotLeft(50, 0.1)
+    if (RightStickXPos <= -CommonConstants.RIGHTJOYSTICKDEADZONE) and (RightStickXPos >= -CommonConstants.RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotLeft(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Pivot left at full speed.
-    elif (RightStickXPos <= -RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotLeft(100, 0.1)
+    elif (RightStickXPos <= -CommonConstants.RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
     # Pivot right at half speed.
-    elif (RightStickXPos >= RIGHTJOYSTICKDEADZONE) and (RightStickXPos <= RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotRight(50, 0.1)
+    elif (RightStickXPos >= CommonConstants.RIGHTJOYSTICKDEADZONE) and (RightStickXPos <= CommonConstants.RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotRight(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
         # Pivot right at full speed.
-    elif (RightStickXPos > RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotRight(100, 0.1) 
+    elif (RightStickXPos > CommonConstants.RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED) 
      
     return    
         
