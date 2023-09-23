@@ -111,7 +111,7 @@ def TurnLeft(RequestedSpeed, Duration):
     TaillightController.BrakeLightsOff()
     TaillightController.IndicatorLightsOff(CommonConstants.RIGHTSIDE)
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(FullBrightness, CommonConstants.LEFTSIDE)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, CommonConstants.LEFTSIDE)
     # Speed controls.
     FrontMtrSpeed(RequestedSpeed)
     RearMtrSpeed(RequestedSpeed)
@@ -161,7 +161,7 @@ def TurnRight(RequestedSpeed, Duration):
     TaillightController.BrakeLightsOff()
     TaillightController.IndicatorLightsOff(CommonConstants.LEFTSIDE)
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(FullBrightness, CommonConstants.RIGHTSIDE)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, CommonConstants.RIGHTSIDE)
     # Speed controls.
     FrontMtrSpeed(RequestedSpeed)
     RearMtrSpeed(RequestedSpeed)
