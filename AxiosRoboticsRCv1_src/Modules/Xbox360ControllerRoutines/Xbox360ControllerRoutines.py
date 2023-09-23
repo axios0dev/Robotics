@@ -12,9 +12,14 @@ from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
 from Modules.CommonConstantLib import CommonConstants
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerMainRoutine
+from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 
 
-def RGBHeadLightDPadRoutine(NextState, CurrentColour):
+CurrentRGBHeadlightColour =  CommonConstants.HEADLIGHTCOLOURS.index(CommonConstants.DEFAULTHEADLIGHTCOLOUR)
+
+def RGBHeadLightDPadRoutine(NextState):
+    global CurrentRGBHeadlightColour
+    selection = None
     
     if(NextState == CommonConstants.LEDOFF):
         HeadlightController.LedOff()
@@ -23,7 +28,7 @@ def RGBHeadLightDPadRoutine(NextState, CurrentColour):
         return 
     elif(NextState == CommonConstants.LEDON):
         Xbox360ControllerMainRoutine.RGBHeadLightOn = True
-        HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentColour])
+        HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentRGBHeadlightColour])
         # Return back to the ControllerRoutines function.
         return   
     
@@ -32,20 +37,20 @@ def RGBHeadLightDPadRoutine(NextState, CurrentColour):
     elif(NextState == CommonConstants.PREVCOLOUR):
         Selection = -1 
          
-    if((CurrentColour + Selection) < CommonConstants.FIRSTCOLOURIDX):
-        CurrentColour = CommonConstants.LASTCOLOURIDX - 1    
+    if((CurrentRGBHeadlightColour + Selection) < CommonConstants.FIRSTCOLOURIDX):
+        CurrentRGBHeadlightColour = CommonConstants.LASTCOLOURIDX - 1    
         
     # Check if the selection is beyond the last colour avalible, then wrap around back to the first.    
-    elif((CurrentColour + Selection) >= CommonConstants.LASTCOLOURIDX):
-        CurrentColour = CommonConstants.FIRSTCOLOURIDX
+    elif((CurrentRGBHeadlightColour + Selection) >= CommonConstants.LASTCOLOURIDX):
+        CurrentRGBHeadlightColour = CommonConstants.FIRSTCOLOURIDX
               
     else: 
-        CurrentColour = (CurrentColour + Selection)
+        CurrentRGBHeadlightColour = (CurrentRGBHeadlightColour + Selection)
         
     print("new colour")
-    print(CommonConstants.HEADLIGHTCOLOURS[CurrentColour])
+    print(CommonConstants.HEADLIGHTCOLOURS[CurrentRGBHeadlightColour])
         
-    HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentColour])
+    HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentRGBHeadlightColour])
     # Return back to the ControllerRoutines function.
     return   
 
@@ -120,7 +125,7 @@ def TwoSpeedAWDMode(RightTriggerVal):
     elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED):
             MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)       
             
-def CleanUpAndPowerDown(CameraModuleUsed):
+def CleanUpAndPowerDown(CameraModuleUsed,Controller):
     
     CameraModuleUsed
     # Run the clean up tasks for the camera controller.

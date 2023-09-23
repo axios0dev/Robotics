@@ -23,7 +23,7 @@ ControllerDebouncer = Xbox360ControllerDebouncer.Debouncer(Controller)
 
 global RGBHeadLightOn
 
-def StartControllerRoutines():
+def StartControllerRoutine():
     
     global RGBHeadLightOn
 
@@ -35,14 +35,9 @@ def StartControllerRoutines():
     SelfDrivingAIActive = False
     
     # Turn on the RGB headlights at their currently set default colour.
-    HeadlightController.RGBColorCycle(CommonConstants.HEADLIGHTCOLOURS[CurrentRGBHeadlightColourSelected])
+    HeadlightController.RGBColorCycle(CommonConstants.DEFAULTHEADLIGHTCOLOUR)
     RGBHeadLightOn = True
-    CurrentRGBHeadlightColourSelected = CommonConstants.HEADLIGHTCOLOURS.index(CommonConstants.DEFAULTHEADLIGHTCOLOUR)
     
-    
-    
-   
-   
     while True:
         
         ControllerDebouncer.CheckForButtonRelease()
@@ -63,7 +58,7 @@ def StartControllerRoutines():
             
             ControllerDebouncer.SetButtonBackPressed()
         
-            Xbox360ControllerRoutines.CleanUpAndPowerDown(CameraModuleUsed)
+            Xbox360ControllerRoutines.CleanUpAndPowerDown(CameraModuleUsed,Controller)
             
         
         elif Controller.B() and (not ControllerDebouncer.ButtonBPressed):
@@ -122,22 +117,22 @@ def StartControllerRoutines():
             ControllerDebouncer.SetButtonDpadUpPressed()
             
             if (not RGBHeadLightOn):
-                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("ON")
+                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.LEDON, )
             elif RGBHeadLightOn:
-                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("OFF")   
+                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.LEDOFF)   
         # Cycle Back Through colours
         elif Controller.dpadLeft() and (not ControllerDebouncer.DpadLeftPressed):
             
             ControllerDebouncer.SetButtonDpadLeftPressed()
            
-            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("PREV")
+            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.PREVCOLOUR)
             
         # Cycle Forward Through colours
         elif Controller.dpadRight() and (not ControllerDebouncer.DpadRightPressed):
             
             ControllerDebouncer.SetButtonDpadRightPressed()
       
-            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine("NEXT")
+            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.NEXTCOLOUR)
                        
         # Guide button activates rolling burnout easter egg mode.
         elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
@@ -175,11 +170,11 @@ def StartControllerRoutines():
         # Left thumbstick x-axis controls the left and right turn functionality.
         # Turn left.
         elif LeftStickXPos < -CommonConstants.LEFTJOYSTICKDEADZONE:
-            MotorController.TurnLeft(100, 0.1)
+            MotorController.TurnLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
             # fwd(0.01)
         # Turn right.    
         elif LeftStickXPos > CommonConstants.LEFTJOYSTICKDEADZONE:
-            MotorController.TurnRight(100, 0.1)
+            MotorController.TurnRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
             # fwd(0.01)
             
         
@@ -191,10 +186,10 @@ def StartControllerRoutines():
         # Right brake/reverse trigger logic.        
         # Reverse 2-speed
         elif (LeftTrigger > CommonConstants.TRIGGERDEADZONE) and (LeftTrigger <= CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(30, 0.1)
+            MotorController.DriveBackwards(CommonConstants.LOWGEARSPEED, CommonConstants.DEFAULTACTIONSPEED)
         
         elif (LeftTrigger > CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(100, 0.1)
+            MotorController.DriveBackwards(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
                             
         # Trigger mapping logic.
         # Left accelerate trigger logic.

@@ -1,6 +1,5 @@
-
-
-
+#!/usr/bin/env python3
+from typing import Final
 
 # This function stops the current drive trajectory when a collision is detected,
 # stops the AxiosRobtocisRCv1 unit in its tracks. Alerts the operator which side the potential
