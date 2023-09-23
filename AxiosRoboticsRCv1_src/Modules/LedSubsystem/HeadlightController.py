@@ -1,146 +1,140 @@
 #!/usr/bin/env python3
-# This modules contains the code to control the RBG LED headlights,
+# This modules contains the code to control the RBG LED headlights
 # of the AxiosRoboticsRCv1 unit.
+
+# Python library imports.
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+# AxiosRobtoticsRCv1 common library imports.
+from Modules.ConstLib import CommonConstants
+from Modules.ConstLib import PinConstants
 
-# Pin definitions.
-RedPin = 26
-GreenPin = 13
-BluePin = 19
-# Pin Setup.
-GPIO.setup(RedPin, GPIO.OUT)  # RED
-GPIO.setup(GreenPin, GPIO.OUT)  # GREEN
-GPIO.setup(BluePin, GPIO.OUT)  # BLUE
+# GPIO pin configuration.
+GPIO.setup(PinConstants.REDLEDPIN, GPIO.OUT)  
+GPIO.setup(PinConstants.GREENLEDPIN, GPIO.OUT)  
+GPIO.setup(PinConstants.BLUELEDPIN, GPIO.OUT)  #
 
 
 # RGB headlight base colour functions.
-def RedLed(state):
-    if (state == "ON"):
-        GPIO.output(RedPin, True)
-    elif (state == "OFF"):
-        GPIO.output(RedPin, False)
+# Red led on/off.
+def RedLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        GPIO.output(PinConstants.REDLEDPIN, True)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        GPIO.output(PinConstants.REDLEDPIN, False)
 
 
-def GreenLed(state):
-    if (state == "ON"):
-        GPIO.output(GreenPin, True)
-    elif (state == "OFF"):
-        GPIO.output(GreenPin, False)
+# Green led on/off.
+def GreenLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        GPIO.output(PinConstants.GREENLEDPIN, True)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        GPIO.output(PinConstants.GREENLEDPIN, False)
 
 
-def BlueLed(state):
-    if (state == "ON"):
-        GPIO.output(BluePin, True)
-    elif (state == "OFF"):
-        GPIO.output(BluePin, False)
+# Blue led on/off.
+def BlueLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        GPIO.output(PinConstants.BLUELEDPIN, True)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        GPIO.output(PinConstants.BLUELEDPIN, False)
 
 
 # RGB headlight mixed colour functions.
-def YellowLed(state):
-    if (state == "ON"):
-        RedLed("ON")
-        GreenLed("ON")
-    elif (state == "OFF"):
-        RedLed("OFF")
-        GreenLed("OFF")
+# Yellow led on/off.
+def YellowLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        RedLED(CommonConstants.LEDON)
+        GreenLED(CommonConstants.LEDON)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        RedLED(CommonConstants.LEDOFF)
+        GreenLED(CommonConstants.LEDOFF)
 
 
-def CyanLed(state):
-    if (state == "ON"):
-        GreenLed("ON")
-        BlueLed("ON")
-    elif (state == "OFF"):
-        GreenLed("OFF")
-        BlueLed("OFF")
+# Cyan led on/off.
+def CyanLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        GreenLED(CommonConstants.LEDON)
+        BlueLED(CommonConstants.LEDON)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        GreenLED(CommonConstants.LEDOFF)
+        BlueLED(CommonConstants.LEDOFF)
 
 
-def MagentaLed(state):
-    if (state == "ON"):
-        RedLed("ON")
-        BlueLed("ON")
-    elif (state == "OFF"):
-        RedLed("OFF")
-        BlueLed("OFF")
+# Magenta led on/off.
+def MagentaLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        RedLED(CommonConstants.LEDON)
+        BlueLED(CommonConstants.LEDON)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        RedLED(CommonConstants.LEDOFF)
+        BlueLED(CommonConstants.LEDOFF)
 
 
-def WhiteLed(state):
-    if (state == "ON"):
-        RedLed("ON")
-        BlueLed("ON")
-        GreenLed("ON")
-    elif (state == "OFF"):
-        RedLed("OFF")
-        BlueLed("OFF")
-        GreenLed("OFF")
+# White led on/off.
+def WhiteLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        RedLED(CommonConstants.LEDON)
+        BlueLED(CommonConstants.LEDON)
+        GreenLED(CommonConstants.LEDON)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        RedLED(CommonConstants.LEDOFF)
+        BlueLED(CommonConstants.LEDOFF)
+        GreenLED(CommonConstants.LEDOFF)
 
 
-def OrangeLed(state):
-    if (state == "ON"):
-        RedLed("ON")
-        YellowLed("ON")
-    elif (state == "OFF"):
-        RedLed("OFF")
-        YellowLed("OFF")
+# Orange led on/off.
+def OrangeLED(RequestedState):
+    if (RequestedState == CommonConstants.LEDON):
+        RedLED(CommonConstants.LEDON)
+        YellowLED(CommonConstants.LEDON)
+    elif (RequestedState == CommonConstants.LEDOFF):
+        RedLED(CommonConstants.LEDOFF)
+        YellowLED(CommonConstants.LEDOFF)
 
 
 # Function to disable all LED pins.        
 def LedOff():
-    RedLed("OFF")
-    GreenLed("OFF")
-    BlueLed("OFF")
+    RedLED(CommonConstants.LEDOFF)
+    GreenLED(CommonConstants.LEDOFF)
+    BlueLED(CommonConstants.LEDOFF)
 
 
-# Function to select RBG led colour.
-def RGBColorCycle(selection):
-    # All leds pins are reset upon colour change, this ensures no unwanted colour mixing occurs.
-    # Red Led.
-    if selection == "RED":
+# Function to select RBG LED colour.
+def RGBColorCycle(RequestedColour):
+    # All LEDs pins are reset upon colour change, this ensures no
+    # unwanted colour mixing occurs.
+    # Red LED.
+    if (RequestedColour == CommonConstants.RED):
         LedOff()
-        OrangeLed("OFF")
-        GreenLed("OFF")
-        RedLed("ON")
-    # Green Led.
-    elif selection == "GREEN":
+        RedLED(CommonConstants.LEDON)
+    # Green LED.
+    elif (RequestedColour == CommonConstants.GREEN):
         LedOff()
-        RedLed("OFF")
-        BlueLed("OFF")
-        GreenLed("ON")
-    # Blue Led.
-    elif selection == "BLUE":
+        GreenLED(CommonConstants.LEDON)
+    # Blue LED.
+    elif (RequestedColour == CommonConstants.BLUE):
         LedOff()
-        GreenLed("OFF")
-        YellowLed("OFF")
-        BlueLed("ON")
-    # Yellow Led.
-    elif selection == "YELLOW":
+        BlueLED(CommonConstants.LEDON)
+    # Yellow LED.
+    elif (RequestedColour == CommonConstants.YELLOW):
         LedOff()
-        BlueLed("OFF")
-        CyanLed("OFF")
-        YellowLed("ON")
-    # Cyan Led.
-    elif selection == "CYAN":
+        YellowLED(CommonConstants.LEDON)
+    # Cyan LED.
+    elif (RequestedColour == CommonConstants.CYAN):
         LedOff()
-        YellowLed("OFF")
-        MagentaLed("OFF")
-        CyanLed("ON")
-    # Magenta Led.
-    elif selection == "Magenta":
+        CyanLED(CommonConstants.LEDON)
+    # Magenta LED.
+    elif (RequestedColour == CommonConstants.MAGENTA):
         LedOff()
-        CyanLed("OFF")
-        WhiteLed("OFF")
-        MagentaLed("ON")
-    # White Led.
-    elif selection == "WHITE":
+        MagentaLED(CommonConstants.LEDON)
+    # White LED.
+    elif (RequestedColour == CommonConstants.WHITE):
         LedOff()
-        MagentaLed("OFF")
-        OrangeLed("OFF")
-        WhiteLed("ON")
-    # Orange Led.
-    elif selection == "ORANGE":
+        WhiteLED(CommonConstants.LEDON)
+    # Orange LED.
+    elif (RequestedColour == CommonConstants.ORANGE):
         LedOff()
-        WhiteLed("OFF")
-        RedLed("OFF")
-        OrangeLed("ON")
+        OrangeLED(CommonConstants.LEDON)
 

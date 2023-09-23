@@ -12,7 +12,7 @@ from socket import socket
 from time import sleep
 from threading import Thread, Event
 # AxiosRoboticsRCv1 unit modules.
-from Modules.LedSubsystem import TailLightController
+from Modules.LedSubsystem import TaillightController
 
 # PiCamera object instantiation and parameter setup.
 camera = PiCamera()
@@ -49,7 +49,7 @@ def StreamServerStart():
     WaitingForTCPConnection = Event()
     WaitingForTCPConnection.set()
     # Start the SyncIndicators subroutine while waiting for the TCP connection.
-    Thread(target=TailLightController.SyncIndicators, args=(WaitingForTCPConnection,)).start()
+    Thread(target=TaillightController.SyncIndicators, args=(WaitingForTCPConnection,)).start()
     # Wait for and establish a TCP connection with a VLC client.
     TCPConnection = ServerSocket.accept()[0].makefile('wb')
     # Clear the event state once the connection is established, this terminates the SyncIndicator thread.

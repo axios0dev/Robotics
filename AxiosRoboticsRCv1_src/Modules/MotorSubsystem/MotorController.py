@@ -4,7 +4,7 @@
 import RPi.GPIO as GPIO
 from time import sleep
 from typing import Final
-from Modules.LedSubsystem import TailLightController 
+from Modules.LedSubsystem import TaillightController 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -74,8 +74,8 @@ def RearMtrSpeed(speed):
 # Movement functions.
 def DriveForward(speed, duration):
     
-    TailLightController.BrakeLightsOff()
-    TailLightController.IndicatorLightsOff()
+    TaillightController.BrakeLightsOff()
+    TaillightController.IndicatorLightsOff()
     
     # Speed controls.
     FrontMtrSpeed(speed)
@@ -96,10 +96,10 @@ def DriveForward(speed, duration):
     
 def DriveBackwards(speed, duration):
     
-    TailLightController.IndicatorLightsOff()
+    TaillightController.IndicatorLightsOff()
     
     # Tail light controls.
-    TailLightController.BrakeLightsOn(speed)
+    TaillightController.BrakeLightsOn(speed)
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -119,11 +119,11 @@ def DriveBackwards(speed, duration):
     
 def TurnLeft(speed, duration):
     
-    TailLightController.BrakeLightsOff()
-    TailLightController.IndicatorLightsOff("RIGHT")
+    TaillightController.BrakeLightsOff()
+    TaillightController.IndicatorLightsOff("RIGHT")
     
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(FullBrightness, "LEFT")
+    TaillightController.IndicatorLightsOn(FullBrightness, "LEFT")
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -143,11 +143,11 @@ def TurnLeft(speed, duration):
     
 def PivotLeft(speed, duration):
     
-    TailLightController.BrakeLightsOff()
-    TailLightController.IndicatorLightsOff("RIGHT")
+    TaillightController.BrakeLightsOff()
+    TaillightController.IndicatorLightsOff("RIGHT")
     
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(speed, "LEFT")
+    TaillightController.IndicatorLightsOn(speed, "LEFT")
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -167,11 +167,11 @@ def PivotLeft(speed, duration):
 
 def TurnRight(speed, duration):
     
-    TailLightController.BrakeLightsOff()
-    TailLightController.IndicatorLightsOff("LEFT")
+    TaillightController.BrakeLightsOff()
+    TaillightController.IndicatorLightsOff("LEFT")
     
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(FullBrightness, "RIGHT")
+    TaillightController.IndicatorLightsOn(FullBrightness, "RIGHT")
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -191,11 +191,11 @@ def TurnRight(speed, duration):
 
 def PivotRight(speed, duration):
     
-    TailLightController.BrakeLightsOff()
-    TailLightController.IndicatorLightsOff("LEFT")
+    TaillightController.BrakeLightsOff()
+    TaillightController.IndicatorLightsOff("LEFT")
     
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(speed, "RIGHT")
+    TaillightController.IndicatorLightsOn(speed, "RIGHT")
     # Speed controls.
     FrontMtrSpeed(speed)
     RearMtrSpeed(speed)
@@ -215,10 +215,10 @@ def PivotRight(speed, duration):
 
 def StopMotors():
     
-    TailLightController.IndicatorLightsOff()
+    TaillightController.IndicatorLightsOff()
     
     # Turn on brake lights.
-    TailLightController.BrakeLightsOn(FullBrightness)
+    TaillightController.BrakeLightsOn(FullBrightness)
     # Front motors.
     GPIO.output(FRONTLEFTMTRFORWARDPIN, True)
     GPIO.output(FrontLeftMtrReversePin, True)  
@@ -230,16 +230,16 @@ def StopMotors():
     GPIO.output(RearRightMtrForwardPin, True)  
     GPIO.output(RearRightMtrReversePin, True)
     # Pin state clean up.
-    #TailLightController.BrakeLightsOff()
+    #TaillightController.BrakeLightsOff()
     
 
 
 def Burnout(speed,duration):
     
-    TailLightController.BrakeLightsOff()
+    TaillightController.BrakeLightsOff()
     
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(FullBrightness)
+    TaillightController.IndicatorLightsOn(FullBrightness)
     # Speed controls.
     FrontMtrSpeed(0)
     RearMtrSpeed(speed)
@@ -258,9 +258,9 @@ def Burnout(speed,duration):
     
     
 def RollingBurnout(frontspeed, rearspeed, duration):
-    TailLightController.BrakeLightsOff()
+    TaillightController.BrakeLightsOff()
     # Tail light controls.
-    TailLightController.IndicatorLightsOn(FullBrightness)
+    TaillightController.IndicatorLightsOn(FullBrightness)
     # Speed controls.
     FrontMtrSpeed(frontspeed)
     RearMtrSpeed(rearspeed)

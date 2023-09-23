@@ -10,7 +10,7 @@ from Modules.CameraSubsystem import CameraController
 from Modules.ConstLib import CommonConstants
 from Modules.LedSubsystem import HeadlightController
 from Modules.MotorSubsystem import MotorController
-from Modules.LedSubsystem import TailLightController
+from Modules.LedSubsystem import TaillightController
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerMainRoutine
 
@@ -139,8 +139,8 @@ def CleanUpAndPowerDown(CameraModuleUsed, Controller):
     # Turn off the RGB headlight module.
     HeadlightController.LedOff()
     # Turn off the tail light module.
-    TailLightController.BrakeLightsOff()
-    TailLightController.IndicatorLightsOff()
+    TaillightController.BrakeLightsOff()
+    TaillightController.IndicatorLightsOff()
     # Perform GPIO pin cleanup.
     GPIO.cleanup()
     # Kill the controller API background processes.       

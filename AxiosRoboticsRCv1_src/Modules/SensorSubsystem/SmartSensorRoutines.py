@@ -10,11 +10,11 @@ def AvoidCollision(side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TailLightController.IndicatorLightsOn(100, side)
+    TaillightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
     MotorController.DriveBackwards(100, 0.3)
     # Turn off indicator after this routine has finished.
-    TailLightController.IndicatorLightsOff(side)
+    TaillightController.IndicatorLightsOff(side)
     # Return back to the ControllerRoutines function.
     return 
 
@@ -25,11 +25,11 @@ def AvoidEntrapment(side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TailLightController.IndicatorLightsOn(100, side)
+    TaillightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.4 seconds to avoid obstacle.
     MotorController.DriveBackwards(100, 0.4)
     # Turn off indicator after this routine has finished.
-    TailLightController.IndicatorLightsOff(side)
+    TaillightController.IndicatorLightsOff(side)
     # Turn 90 degrees and continue
     if(side == "LEFT"):
         MotorController.PivotLeft(100, 0.6)
@@ -43,11 +43,11 @@ def AvoidObstacle(side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TailLightController.IndicatorLightsOn(100, side)
+    TaillightController.IndicatorLightsOn(100, side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
     MotorController.DriveBackwards(50, 0.5)
     # Turn off indicator after this routine has finished.
-    TailLightController.IndicatorLightsOff(side)
+    TaillightController.IndicatorLightsOff(side)
       # Turn briefly and continue
     if(side == "LEFT"):
         MotorController.TurnLeft(100, 0.6)
