@@ -111,24 +111,24 @@ def StartControllerRoutine():
             ControllerDebouncer.SetButtonDpadUpPressed()
             # Turn on RGB headlights.
             if (not RGBHeadLightOn):
-                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.LEDON)
+                Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.LEDON)
             # Turn on RGB headlights.
             elif (RGBHeadLightOn):
-                Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.LEDOFF)   
+                Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.LEDOFF)   
                 
         # Dpad left pressed - Cycles back through RGB headlight colour set.
         elif Controller.dpadLeft() and (not ControllerDebouncer.DpadLeftPressed):
             # Set the debouncer button state to pressed.
             ControllerDebouncer.SetButtonDpadLeftPressed()
             # Cycle back through colours.
-            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.PREVCOLOUR)
+            Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.PREVCOLOUR)
             
         # Dpad right pressed - Cycles forward through RGB headlight colour set.
         elif Controller.dpadRight() and (not ControllerDebouncer.DpadRightPressed):
             # Set the debouncer button state to pressed.
             ControllerDebouncer.SetButtonDpadRightPressed()
              # Cycle forward through colours.
-            Xbox360ControllerRoutines.RGBHeadLightDPadRoutine(CommonConstants.NEXTCOLOUR)
+            Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.NEXTCOLOUR)
                                         
         # Guide button pressed - Activates/deactivates the rolling burnout easter egg mode.
         elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):

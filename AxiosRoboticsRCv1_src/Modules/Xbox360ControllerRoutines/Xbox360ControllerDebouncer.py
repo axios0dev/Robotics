@@ -2,13 +2,15 @@
 # This module contains a debouncer class which is designed to be used with the Xbox360ControllerAPI.
 # This class keeps track of each button state to ensure when a button is pressed and held it is only
 # registered as one action by the AxiosRobtoicsRCv1 unit. 
+
+# AxiosRobtoticsRCv1 submodule and common library imports.
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 
 
+# Debouncer class definition with constructor and button state functions.
 class Debouncer:
     # Local variable to store controller object passed by constructor.
     LocalControllerObject = None
-
     # Class constructor that takes an Xbox controller object.
     def __init__(self, xboxcontroller):
         self.LocalControllerObject = xboxcontroller
