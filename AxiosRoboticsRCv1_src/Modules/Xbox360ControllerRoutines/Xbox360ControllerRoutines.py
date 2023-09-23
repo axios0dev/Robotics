@@ -72,16 +72,16 @@ def RearWheelDriveBurnout(RightTriggerVal):
     
     # First gear 25% throttle.
     elif(RightTriggerVal > CommonConstants.TRIGGERDEADZONE) and (RightTriggerVal <= CommonConstants.TRIGGERQTRPRESSED):
-        MotorController.Burnout(CommonConstants.ONEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.Burnout(CommonConstants.ONEQTRSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Second gear 50% throttle.
     elif (RightTriggerVal > CommonConstants.TRIGGERQTRPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERHALFPRESSED):
-        MotorController.Burnout(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.Burnout(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Third gear 75% throttle.
     elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(CommonConstants.THREEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.Burnout(CommonConstants.THREEQTRSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Fourth gear full throttle.
     elif (RightTriggerVal > CommonConstants.TRIGGERTHREEQTRPRESSED):
-        MotorController.Burnout(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.Burnout(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Return back to the ControllerRoutines function.
     return     
 
@@ -99,16 +99,16 @@ def RollingBurnoutMode(RightTriggerVal):
     
     # First gear 25% throttle.
     if (RightTriggerVal > CommonConstants.TRIGGERDEADZONE) and (RightTriggerVal <= CommonConstants.TRIGGERQTRPRESSED):
-        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.ONEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.ONEQTRSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Second gear 50% throttle.
     elif (RightTriggerVal > CommonConstants.TRIGGERQTRPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERHALFPRESSED):
-        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Third gear 75% throttle.    
     elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED) and (RightTriggerVal <= CommonConstants.TRIGGERTHREEQTRPRESSED):
-        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.THREEQTRSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.THREEQTRSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Fourth gear full throttle.    
     elif (RightTriggerVal > CommonConstants.TRIGGERTHREEQTRPRESSED):
-        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.RollingBurnout(CommonConstants.FRONTMOTORCRAWLSPEED, CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Return back to the ControllerRoutines function.
     return      
 
@@ -124,10 +124,10 @@ def TwoSpeedAWDMode(RightTriggerVal):
     # 2-speed all wheel drive mode.
     # Low gear 30% throttle.
     if (RightTriggerVal > CommonConstants.TRIGGERDEADZONE) and (RightTriggerVal <= CommonConstants.TRIGGERHALFPRESSED):
-        MotorController.DriveForward(30, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.DriveForward(30, CommonConstants.DEFAULTACTIONDURATION)
     # High gear full throttle.    
     elif (RightTriggerVal > CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)       
+            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)       
 
 
 # This function performs a graceful clean up and shutdown of the AxiosRobtoticsRCv1 unit.         
@@ -157,16 +157,16 @@ def PivotRoutine(RightStickXPos):
     # 100% speed depending on how far the thumbstick is moved in either direction.
     # Pivot left at half speed.    
     if (RightStickXPos <= -CommonConstants.RIGHTJOYSTICKDEADZONE) and (RightStickXPos >= -CommonConstants.RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotLeft(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.PivotLeft(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Pivot left at full speed.
     elif (RightStickXPos <= -CommonConstants.RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.PivotLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
     # Pivot right at half speed.
     elif (RightStickXPos >= CommonConstants.RIGHTJOYSTICKDEADZONE) and (RightStickXPos <= CommonConstants.RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotRight(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONSPEED)
+        MotorController.PivotRight(CommonConstants.HALFSPEED, CommonConstants.DEFAULTACTIONDURATION)
         # Pivot right at full speed.
     elif (RightStickXPos > CommonConstants.RIGHTJOYSTICKHALFPOS):
-        MotorController.PivotRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED) 
+        MotorController.PivotRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION) 
     # Return back to the ControllerRoutines function.
     return    
         

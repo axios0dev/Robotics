@@ -52,7 +52,7 @@ PWMHUNDREDDUTY: Final[int] = 100
 PWMFREQUENCY: Final[int] = 100
 
 # Movement speed constants.
-DEFAULTACTIONSPEED: Final[int] = 0.1
+DEFAULTACTIONDURATION: Final[int] = 0.1
 FRONTMOTORCRAWLSPEED: Final[int] = 7
 LOWGEARSPEED: Final[int] = 30
 ONEQTRSPEED: Final[int] = PWMTWENTYFIVEDUTY

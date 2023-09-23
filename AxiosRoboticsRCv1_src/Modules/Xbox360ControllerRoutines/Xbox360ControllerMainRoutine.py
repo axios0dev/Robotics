@@ -176,10 +176,10 @@ def StartControllerRoutine():
         # Left thumbstick x-axis controls the left and right turn functionality.
         # Turn left.
         elif (LeftStickXPos < -CommonConstants.LEFTJOYSTICKDEADZONE):
-            MotorController.TurnLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
+            MotorController.TurnLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
         # Turn right.    
         elif (LeftStickXPos > CommonConstants.LEFTJOYSTICKDEADZONE):
-            MotorController.TurnRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
+            MotorController.TurnRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
         
         # Right thumbstick pivot logic.
         # If the right thumbstick is moved perform the pivot functionality.
@@ -190,10 +190,10 @@ def StartControllerRoutine():
         # Right trigger pressed - Performs the reverse trigger functionality.        
         # Reverse 2-speed, reverse at 30% speed if the trigger is half depressed.
         elif (LeftTrigger > CommonConstants.TRIGGERDEADZONE) and (LeftTrigger <= CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(CommonConstants.LOWGEARSPEED, CommonConstants.DEFAULTACTIONSPEED)
+            MotorController.DriveBackwards(CommonConstants.LOWGEARSPEED, CommonConstants.DEFAULTACTIONDURATION)
         # Reverse at 100$ speed if the trigger is overhalf way depressed.
         elif (LeftTrigger > CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONSPEED)
+            MotorController.DriveBackwards(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
                         
         # Left trigger pressed - Accelerate trigger logic performed depending on current drive mode.
         # Check for special drive mode overrides first. 
