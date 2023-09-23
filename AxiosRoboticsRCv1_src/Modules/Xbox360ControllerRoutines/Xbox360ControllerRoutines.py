@@ -4,7 +4,6 @@ import RPi.GPIO as GPIO
 from os import system 
 from typing import Final
 from time import sleep
-import sys
 
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerDebouncer
@@ -143,7 +142,7 @@ def RollingBurnoutMode(RightTriggerVal):
 
 
 
-def TwoSpeedMode(RightTriggerVal):
+def TwoSpeedAWDMode(RightTriggerVal):
     # Return back to the ControllerRoutines function if the accelerate trigger is not depressed.
     if(RightTriggerVal <= TRIGGERDEADZONE):
         # Stop all motors.
@@ -175,10 +174,32 @@ def CleanUpAndPowerDown():
     Controller.close()
                 
     # Shutdown the pi zero motherboard.
-    system('systemctl poweroff')
+    #system('systemctl poweroff')
       
     # Wait for the shutdown to commence.        
     sleep(3)
+    
+    
+def PivotRoutine(RightStickXPos):
+    # Right thumbstick x-axis controls the left and right pivoting functionality,
+    # which supports 50% and 100% speed depending on how far the thumbstick is turned
+    # in either direction.
+    # Pivot left at half speed.   
+    
+          
+    if (RightStickXPos <= -RIGHTJOYSTICKDEADZONE) and (RightStickXPos >= -RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotLeft(50, 0.1)
+    # Pivot left at full speed.
+    elif (RightStickXPos <= -RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotLeft(100, 0.1)
+    # Pivot right at half speed.
+    elif (RightStickXPos >= RIGHTJOYSTICKDEADZONE) and (RightStickXPos <= RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotRight(50, 0.1)
+        # Pivot right at full speed.
+    elif (RightStickXPos > RIGHTJOYSTICKHALFPOS):
+        MotorController.PivotRight(100, 0.1) 
+     
+    return    
                 
 
 
@@ -210,17 +231,28 @@ def StartControllerRoutines():
         
         # Button action mapping tree.
         # Back button shuts down the unit.
-        if Controller.Back() and (not ControllerDebouncer.ButtonBackPressed):
-            
-            #pydevd.settrace()
+        if Controller.Back() and (not ControllerDebouncer.ButtonBackPressed): 
             
             ControllerDebouncer.SetButtonBackPressed()
         
             CleanUpAndPowerDown()
-                 
+            
+        
+        elif Controller.B() and (not ControllerDebouncer.ButtonBPressed):
             
             
+            ControllerDebouncer.SetButtonBPressed()
             
+            EmergencyStopActive = True
+    
+            while (EmergencyStopActive):
+            
+                MotorController.StopMotors()
+                
+                if(not Controller.B()):
+                    EmergencyStopActive = False
+              
+                  
         # Start button starts the live video feed from the camera controller.
         elif Controller.Start() and (not ControllerDebouncer.ButtonStartPressed):
             
@@ -233,9 +265,10 @@ def StartControllerRoutines():
             
         # Y button powers on/off the front ultrasonic distance sensor module and,
         # enables/disables dual collision avoidance. 
-        elif Controller.Y() and (not ControllerDebouncer.ButtonYPressed):
+        
+        elif Controller.leftBumper() and (not ControllerDebouncer.ButtonLBPressed):
             
-            ControllerDebouncer.SetButtonYPressed()
+            ControllerDebouncer.SetButtonLBPressed()
         
             # Turn on collision avoidance.
             if (not CollisionAvoidanceOn):
@@ -249,79 +282,13 @@ def StartControllerRoutines():
                 # Turn Off Sensor Managment Module
                 GPIO.output(promini, False)
                 time.sleep(1)
-        
-        # Collision avoidance checks.
-        elif CollisionAvoidanceOn:
-            # Prevent Collision Detected By Left Sensor.
-            if(GPIO.input(LeftalrtReg) == 1):
-                SmartSensorRoutines.AvoidCollision("LEFT")        
-            # Prevent Collision Detected By Right Sensor
-            elif (GPIO.input(RightalrtReg) == 1):
-                SmartSensorRoutines.AvoidCollision("RIGHT")  
-
-        # Guide button activates rolling burnout easter egg mode.
-        elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
-            
-            ControllerDebouncer.SetButtonGuidePressed()
-            
-            if (not RearWheelDriveBurnoutEnabled):
-                if (not RollingBurnoutModeEnabled):
-                    RollingBurnoutModeEnabled = True
-                elif RollingBurnoutModeEnabled:
-                    RollingBurnoutModeEnabled = False
                 
-        # A button activates/deactivates the rear wheel drive 4-speed burnout mode.
-        elif Controller.A() and (not ControllerDebouncer.ButtonAPressed):
-            
-            ControllerDebouncer.SetButtonAPressed()
-            
-            if (not RollingBurnoutModeEnabled):
-                if not RearWheelDriveBurnoutEnabled:
-                    RearWheelDriveBurnoutEnabled = True
-                elif RearWheelDriveBurnoutEnabled:
-                    RearWheelDriveBurnoutEnabled = False
-
-        # Thumbstick mapping logic.
-        # Left thumbstick x-axis controls the left and right turn functionality.
-        # Turn left.
-        elif LeftStickXPos < -LEFTJOYSTICKDEADZONE:
-            MotorController.TurnLeft(100, 0.1)
-            # fwd(0.01)
-        # Turn right.    
-        elif LeftStickXPos > LEFTJOYSTICKDEADZONE:
-            MotorController.TurnRight(100, 0.1)
-            # fwd(0.01)
-            
-        # Right thumbstick x-axis controls the left and right pivoting functionality,
-        # which supports 50% and 100% speed depending on how far the thumbstick is turned
-        # in either direction.
-        # Pivot left at half speed.         
-        elif (RightStickXPos >= -RIGHTJOYSTICKHALFPOS) and (RightStickXPos <= -RIGHTJOYSTICKDEADZONE):
-            MotorController.PivotLeft(50, 0.1)
-        # Pivot left at full speed.
-        elif RightStickXPos <= -RIGHTJOYSTICKHALFPOS:
-            MotorController.PivotLeft(100, 0.1)
-         # Pivot right at half speed.
-        elif (RightStickXPos >= RIGHTJOYSTICKDEADZONE) and (RightStickXPos <= RIGHTJOYSTICKHALFPOS):
-          MotorController.PivotRight(50, 0.1)
-        # Pivot right at full speed.
-        elif RightStickXPos > RIGHTJOYSTICKHALFPOS:
-            MotorController.PivotRight(100, 0.1) 
-                 
-        # Right brake/reverse trigger logic.        
-        # Reverse 2-speed
-        elif (LeftTrigger > TRIGGERDEADZONE) and (LeftTrigger <= TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(30, 0.1)
-        
-        elif (LeftTrigger > TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(100, 0.1)
-                         
         # Left bumper activates the self driving mode.
-        elif (Controller.leftBumper() and CollisionAvoidanceOn) and (not ControllerDebouncer.ButtonLBPressed):
+        elif (Controller.rightBumper() and CollisionAvoidanceOn) and (not ControllerDebouncer.ButtonRBPressed):
             
-            ControllerDebouncer.SetButtonLBPressed()
-            
-        # RGB Headlight Dpad Integration
+            ControllerDebouncer.SetButtonRBPressed()
+                          
+          # RGB Headlight Dpad Integration
         elif Controller.dpadUp() and (not ControllerDebouncer.DpadUpPressed):
             
             ControllerDebouncer.SetButtonDpadUpPressed()
@@ -343,9 +310,64 @@ def StartControllerRoutines():
             ControllerDebouncer.SetButtonDpadRightPressed()
       
             RGBHeadLightDPadRoutine("NEXT")
-               
-               
-               
+                       
+        # Guide button activates rolling burnout easter egg mode.
+        elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
+            
+            ControllerDebouncer.SetButtonGuidePressed()
+            
+            if (not RearWheelDriveBurnoutEnabled):
+                if (not RollingBurnoutModeEnabled):
+                    RollingBurnoutModeEnabled = True
+                elif RollingBurnoutModeEnabled:
+                    RollingBurnoutModeEnabled = False
+                
+        # A button activates/deactivates the rear wheel drive 4-speed burnout mode.
+        elif Controller.A() and (not ControllerDebouncer.ButtonAPressed):
+            
+            ControllerDebouncer.SetButtonAPressed()
+            
+            if (not RollingBurnoutModeEnabled):
+                if not RearWheelDriveBurnoutEnabled:
+                    RearWheelDriveBurnoutEnabled = True
+                elif RearWheelDriveBurnoutEnabled:
+                    RearWheelDriveBurnoutEnabled = False
+                    
+                    
+        # Collision avoidance checks.
+        elif CollisionAvoidanceOn:
+            # Prevent Collision Detected By Left Sensor.
+            if(GPIO.input(LeftalrtReg) == 1):
+                SmartSensorRoutines.AvoidCollision("LEFT")        
+            # Prevent Collision Detected By Right Sensor
+            elif (GPIO.input(RightalrtReg) == 1):
+                SmartSensorRoutines.AvoidCollision("RIGHT")             
+                    
+        # Thumbstick mapping logic.
+        # Left thumbstick x-axis controls the left and right turn functionality.
+        # Turn left.
+        elif LeftStickXPos < -LEFTJOYSTICKDEADZONE:
+            MotorController.TurnLeft(100, 0.1)
+            # fwd(0.01)
+        # Turn right.    
+        elif LeftStickXPos > LEFTJOYSTICKDEADZONE:
+            MotorController.TurnRight(100, 0.1)
+            # fwd(0.01)
+            
+        
+        elif (RightStickXPos <= -RIGHTJOYSTICKDEADZONE) or (RightStickXPos >= RIGHTJOYSTICKDEADZONE):
+            PivotRoutine(RightStickXPos)    
+     
+     
+     
+        # Right brake/reverse trigger logic.        
+        # Reverse 2-speed
+        elif (LeftTrigger > TRIGGERDEADZONE) and (LeftTrigger <= TRIGGERHALFPRESSED):
+            MotorController.DriveBackwards(30, 0.1)
+        
+        elif (LeftTrigger > TRIGGERHALFPRESSED):
+            MotorController.DriveBackwards(100, 0.1)
+                            
         # Trigger mapping logic.
         # Left accelerate trigger logic.
         # Check for special drive mode overrides first. 
@@ -359,6 +381,6 @@ def StartControllerRoutines():
         # 2-speed all wheel drive mode.
         # Low gear 30% throttle.
         elif TwoSpeedModeEnabled:
-            TwoSpeedMode(RightTrigger)
+            TwoSpeedAWDMode(RightTrigger)
         
            

@@ -90,7 +90,7 @@ class Joystick:
                     response = self.pipe.readline()
                     # A zero length response means controller has been unplugged.
                     if len(response) == 0:
-                        print('Xbox controller disconnected from USB')
+                        raise IOError('Xbox controller disconnected from USB')
                     readable, writeable, exception = select.select([self.pipe],[],[],0)
                 # Valid controller response will be 140 chars.  
                 if len(response) == 140:
