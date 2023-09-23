@@ -57,7 +57,7 @@ def BrakeLightsOff(side=CommonConstants.BOTHSIDES):
         RightBrakelightPWM.ChangeDutyCycle(CommonConstants.PWMNODUTY) 
     # Default case is to turn both lights off.    
     elif(side == CommonConstants.BOTHSIDES):
-        RightBrakelightPWM.ChangeDutyCycle(CommonConstants.PWMNODUTY)
+        LeftBrakelightPWM.ChangeDutyCycle(CommonConstants.PWMNODUTY)
         RightBrakelightPWM.ChangeDutyCycle(CommonConstants.PWMNODUTY)
 
 

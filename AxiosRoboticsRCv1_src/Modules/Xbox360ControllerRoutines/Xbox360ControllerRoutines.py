@@ -8,9 +8,9 @@ from os import system
 # AxiosRobtoticsRCv1 submodule and common library imports.
 from Modules.CameraSubsystem import CameraController
 from Modules.ConstLib import CommonConstants
-from Modules.LedSubsystem import HeadlightController
+from Modules.LEDSubsystem import HeadlightController
 from Modules.MotorSubsystem import MotorController
-from Modules.LedSubsystem import TaillightController
+from Modules.LEDSubsystem import TaillightController
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerMainRoutine
 
