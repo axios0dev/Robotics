@@ -4,7 +4,7 @@
 import RPi.GPIO as GPIO
 from time import sleep
 from typing import Final
-from Modules.LedSubsystem import TaillightController 
+from Modules.LEDSubsystem import TaillightController 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 

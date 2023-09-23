@@ -12,7 +12,7 @@ from socket import socket
 from time import sleep
 from threading import Thread, Event
 # AxiosRoboticsRCv1 unit modules.
-from Modules.LedSubsystem import TaillightController
+from Modules.LEDSubsystem import TaillightController
 
 # PiCamera object instantiation and parameter setup.
 camera = PiCamera()
