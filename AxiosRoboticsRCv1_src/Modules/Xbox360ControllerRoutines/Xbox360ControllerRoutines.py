@@ -10,7 +10,7 @@ from Modules.CameraSubsystem import CameraController
 from Modules.LedSubsystem import HeadlightController
 from Modules.LedSubsystem import TailLightController
 from Modules.MotorSubsystem import MotorController
-from Modules.CommonConstantLib import CommonConstants
+from Modules.ConstLib import CommonConstants
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerMainRoutine
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI
 
