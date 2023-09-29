@@ -14,12 +14,14 @@ def ClearSerialBuffers():
 def main():
     
     ClearSerialBuffers()
+    SerialConnection.write(b"ON\n")   
+    
+    sleep(1)
     
     try:
         while True:
+            sleep(0.02)
             
-            SerialConnection.write(b"Hello from Raspberry Pi!\n")   
-            sleep(0.1)
             if (SerialConnection.in_waiting > 0):
                 try:
                     line = SerialConnection.readline().decode('utf-8').rstrip()
@@ -32,6 +34,7 @@ def main():
      
     except KeyboardInterrupt:
             print("closting serial connection")
+            SerialConnection.write(b"OFF\n")   
             SerialConnection.close() 
 
 
