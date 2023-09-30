@@ -19,13 +19,11 @@ def SensorControllerRoutine(SensorThreadState):
     ClearSerialBuffers()
     SerialConnection.write(b"ON\n")   
     
-    sleep(0.1)
+    sleep(0.05)
     
     try:
         while SensorThreadState.is_set():
                
-           
-            
             if (SerialConnection.in_waiting > 0):
                 try:
                     SensorSerialData = SerialConnection.readline().decode('utf-8').rstrip()
@@ -60,7 +58,7 @@ def main():
     
     sleep(10)
     print("unsetting thread state")
-    SensorThreadStateEvent.clear()
+    #SensorThreadStateEvent.clear()
     
     
     
