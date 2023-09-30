@@ -86,7 +86,8 @@ def SelfDrivingAI(Controller):
         # to normal operation.
         if Controller.leftBumper():
             MotorController.StopMotors()
-            SelfDrivingAIActive = False    
+            SelfDrivingAIActive = False
+            return    
         # If entrapment is detected by reverse and turn to navigate out of the corner.
         # Entrapment by left side.    
         elif (LeftSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):

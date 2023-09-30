@@ -177,9 +177,11 @@ def StartControllerRoutine():
         # Turn left.
         elif (LeftStickXPos < -CommonConstants.LEFTJOYSTICKDEADZONE):
             MotorController.TurnLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
+            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
         # Turn right.    
         elif (LeftStickXPos > CommonConstants.LEFTJOYSTICKDEADZONE):
             MotorController.TurnRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
+            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
         
         # Right thumbstick pivot logic.
         # If the right thumbstick is moved perform the pivot functionality.
