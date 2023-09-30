@@ -90,10 +90,12 @@ void loop() {
     // If a request to turn on the SensorReadingRoutine() has been received then set the state flag to true, which
     // will cause the routine to be run on every iteration until a request to change the state has been received.
     if(ReceivedSerialData == SensorOnState){
+      Serial.println("Starting sensor reading routine...");
       SensorReadingRoutineStarted = true;
     }
     // Disable the SensorReadingRoutine() when a request to turn off sensor monitoring has been received.
     else if(ReceivedSerialData == SensorOffState){
+      Serial.println("Stopping sensor reading routine...");
       SensorReadingRoutineStarted = false;
     }
   }

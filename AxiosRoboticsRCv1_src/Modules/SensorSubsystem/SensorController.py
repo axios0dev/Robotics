@@ -14,56 +14,48 @@ def ClearSerialBuffers():
         SerialConnection.reset_input_buffer()
         SerialConnection.reset_output_buffer()
 
-def SensorControllerRoutine(SensorThreadState):
+def SensorSerialRoutine(SensorThreadState):
     
     ClearSerialBuffers()
     SerialConnection.write(b"ON\n")   
     
     sleep(0.05)
     
-    try:
-        while SensorThreadState.is_set():
-               
-            if (SerialConnection.in_waiting > 0):
-                try:
-                    SensorSerialData = SerialConnection.readline().decode('utf-8').rstrip()
-                    LeftSensorData,RightSensorData = SensorSerialData.split(",")
-                    LeftSensorData = int(LeftSensorData.strip("L:"))
-                    RightSensorData = int(RightSensorData.strip("R:"))
+    while SensorThreadState.is_set():
+        if (SerialConnection.in_waiting > 0):
+            try:
+                SensorSerialData = SerialConnection.readline().decode('utf-8').rstrip()
+                if(SensorSerialData == "Starting sensor reading routine..."):
+                    print(SensorSerialData)
+                    continue
+                    
+                LeftSensorData,RightSensorData = SensorSerialData.split(",")
+                LeftSensorData = int(LeftSensorData.strip("L:"))
+                RightSensorData = int(RightSensorData.strip("R:"))
+                        
+                print("Left val", LeftSensorData)
+                print("Right val", RightSensorData)
                     
                     
-                    print("Left val", LeftSensorData)
-                    print("Right val", RightSensorData)
+            except UnicodeDecodeError:
+                print("Serial Buffer Error")
                     
-                    
-                except UnicodeDecodeError:
-                    print("Serial Buffer Error")
-                    
-            sleep(0.02)  
+        sleep(0.02)  
             
-             
-     
-    except KeyboardInterrupt:
-            print("closting serial connection")
-            SerialConnection.write(b"OFF\n")   
-            SerialConnection.close() 
-
-
 def main():
     SensorThreadStateEvent = Event()
     SensorThreadStateEvent.set()
     
-    Thread(target=SensorControllerRoutine, args=(SensorThreadStateEvent,)).start()
+    Thread(target=SensorSerialRoutine, args=(SensorThreadStateEvent,)).start()
     
     
-    sleep(10)
+    sleep(2)
     print("unsetting thread state")
-    #SensorThreadStateEvent.clear()
+    SensorThreadStateEvent.clear()
+    SerialConnection.write(b"OFF\n")
+    SerialConnection.close() 
     
     
-    
-    
-
 if __name__ == '__main__':
     main()
     
