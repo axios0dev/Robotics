@@ -6,7 +6,7 @@
 # Python library imports.
 from typing import Final
 # AxiosRobtoticsRCv1 submodule and common library imports.
-from Modules.ConstLib import CommonConstants
+from Modules.ConstantLibrary import CommonConstants
 from Modules.MotorSubsystem import MotorController
 from Modules.LEDSubsystem import TaillightController
 from Modules.Xbox360ControllerRoutines import Xbox360ControllerAPI

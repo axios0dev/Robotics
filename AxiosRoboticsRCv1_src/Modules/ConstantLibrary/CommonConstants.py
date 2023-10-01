@@ -35,7 +35,7 @@ LED_OFF: Final[str] = "OFF"
 NEXT_COLOUR: Final[str] = "NEXT"
 PREV_COLOUR: Final[str] = "PREV"
 FIRST_COLOUR_IDX: Final[int] = 0
-LAST_COLOUR_IDX: Final[int] = HEADLIGHTCOLOURSLENGTH
+LAST_COLOUR_IDX: Final[int] = HEADLIGHT_COLOURS_LENGTH
 
 # Independent physical unit side definitions.
 BOTH_SIDES: Final[str]= "BOTH"
@@ -54,11 +54,11 @@ PWM_FREQUENCY: Final[int] = 100
 # Movement speed constants.
 DEFAULT_ACTION_DURATION: Final[int] = 0.1
 LOW_GEAR_SPEED: Final[int] = 30
-ONE_QTR_SPEED: Final[int] = PWMTWENTYFIVEDUTY
-HALF_SPEED: Final[int] = PWMFIFTYDUTY
-THREE_QTR_SPEED: Final[int] = PWMSEVENTYFIVEDUTY
-FULL_SPEED: Final[int] = PWMHUNDREDDUTY
+ONE_QTR_SPEED: Final[int] = PWM_TWENTY_FIVE_DUTY
+HALF_SPEED: Final[int] = PWM_FIFTY_DUTY
+THREE_QTR_SPEED: Final[int] = PWM_SEVENTY_FIVE_DUTY
+FULL_SPEED: Final[int] = PWM_HUNDRED_DUTY
 
 # LED brightness constant definitions.
-FULL_BRIGHTNESS: Final[int] = PWMHUNDREDDUTY
+FULL_BRIGHTNESS: Final[int] = PWM_HUNDRED_DUTY
 

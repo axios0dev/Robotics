@@ -7,7 +7,7 @@ from time import sleep
 from os import system 
 # AxiosRobtoticsRCv1 submodule and common library imports.
 from Modules.CameraSubsystem import CameraController
-from Modules.ConstLib import CommonConstants
+from Modules.ConstantLibrary import CommonConstants
 from Modules.LEDSubsystem import HeadlightController
 from Modules.MotorSubsystem import MotorController
 from Modules.LEDSubsystem import TaillightController

@@ -3,8 +3,8 @@
 # rear tail light and indicator cluster of the AxiosRoboticsRCv1 unit.
 
 # Python library imports.
-from Modules.ConstLib import CommonConstants
-from Modules.ConstLib import PinConstants
+from Modules.ConstantLibrary import CommonConstants
+from Modules.ConstantLibrary import PinConstants
 import RPi.GPIO as GPIO
 from time import sleep
 
@@ -12,20 +12,20 @@ from time import sleep
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 # Left light cluster setup.
-GPIO.setup(PinConstants.LEFTBRAKELIGHTPIN, GPIO.OUT)  
-GPIO.setup(PinConstants.LEFTINDICATORPIN, GPIO.OUT)
+GPIO.setup(PinConstants.LEFT_BRAKELIGHT_PIN, GPIO.OUT)  
+GPIO.setup(PinConstants.LEFT_INDICATOR_PIN, GPIO.OUT)
 # PWM config at 100Hz.
-LeftBrakelightPWM = GPIO.PWM(PinConstants.LEFTBRAKELIGHTPIN, CommonConstants.PWM_FREQUENCY)
-LeftIndicatorPWM = GPIO.PWM(PinConstants.LEFTINDICATORPIN, CommonConstants.PWM_FREQUENCY)
+LeftBrakelightPWM = GPIO.PWM(PinConstants.LEFT_BRAKELIGHT_PIN, CommonConstants.PWM_FREQUENCY)
+LeftIndicatorPWM = GPIO.PWM(PinConstants.LEFT_INDICATOR_PIN, CommonConstants.PWM_FREQUENCY)
 # Start PWM duty cycle at 0.
 LeftBrakelightPWM.start(CommonConstants.PWM_NO_DUTY)
 LeftIndicatorPWM.start(CommonConstants.PWM_NO_DUTY)
 # Right light cluster setup.
-GPIO.setup(PinConstants.RIGHTBRAKELIGHTPIN, GPIO.OUT)
-GPIO.setup(PinConstants.RIGHTINDICATORPIN, GPIO.OUT)
+GPIO.setup(PinConstants.RIGHT_BRAKELIGHT_PIN, GPIO.OUT)
+GPIO.setup(PinConstants.RIGHT_INDICATOR_PIN, GPIO.OUT)
 # PWM config at 100Hz.
-RightBrakelightPWM = GPIO.PWM(PinConstants.RIGHTBRAKELIGHTPIN, CommonConstants.PWM_FREQUENCY)
-RightIndicatorPWM = GPIO.PWM(PinConstants.RIGHTINDICATORPIN, CommonConstants.PWM_FREQUENCY)
+RightBrakelightPWM = GPIO.PWM(PinConstants.RIGHT_BRAKELIGHT_PIN, CommonConstants.PWM_FREQUENCY)
+RightIndicatorPWM = GPIO.PWM(PinConstants.RIGHT_INDICATOR_PIN, CommonConstants.PWM_FREQUENCY)
 # Start PWM duty cycle at 0.
 RightBrakelightPWM.start(CommonConstants.PWM_NO_DUTY)
 RightIndicatorPWM.start(CommonConstants.PWM_NO_DUTY)

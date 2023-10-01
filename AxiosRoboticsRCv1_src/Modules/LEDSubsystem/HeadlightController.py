@@ -7,38 +7,38 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 # AxiosRobtoticsRCv1 common library imports.
-from Modules.ConstLib import CommonConstants
-from Modules.ConstLib import PinConstants
+from Modules.ConstantLibrary import CommonConstants
+from Modules.ConstantLibrary import PinConstants
 
 # GPIO pin configuration.
-GPIO.setup(PinConstants.REDLEDPIN, GPIO.OUT)  
-GPIO.setup(PinConstants.GREENLEDPIN, GPIO.OUT)  
-GPIO.setup(PinConstants.BLUELEDPIN, GPIO.OUT)  #
+GPIO.setup(PinConstants.RED_LED_PIN, GPIO.OUT)  
+GPIO.setup(PinConstants.GREEN_LED_PIN, GPIO.OUT)  
+GPIO.setup(PinConstants.BLUE_LED_PIN, GPIO.OUT)  #
 
 
 # RGB headlight base colour functions.
 # Red led on/off.
 def RedLED(RequestedState):
     if (RequestedState == CommonConstants.LED_ON):
-        GPIO.output(PinConstants.REDLEDPIN, True)
+        GPIO.output(PinConstants.RED_LED_PIN, True)
     elif (RequestedState == CommonConstants.LED_OFF):
-        GPIO.output(PinConstants.REDLEDPIN, False)
+        GPIO.output(PinConstants.RED_LED_PIN, False)
 
 
 # Green led on/off.
 def GreenLED(RequestedState):
     if (RequestedState == CommonConstants.LED_ON):
-        GPIO.output(PinConstants.GREENLEDPIN, True)
+        GPIO.output(PinConstants.GREEN_LED_PIN, True)
     elif (RequestedState == CommonConstants.LED_OFF):
-        GPIO.output(PinConstants.GREENLEDPIN, False)
+        GPIO.output(PinConstants.GREEN_LED_PIN, False)
 
 
 # Blue led on/off.
 def BlueLED(RequestedState):
     if (RequestedState == CommonConstants.LED_ON):
-        GPIO.output(PinConstants.BLUELEDPIN, True)
+        GPIO.output(PinConstants.BLUE_LED_PIN, True)
     elif (RequestedState == CommonConstants.LED_OFF):
-        GPIO.output(PinConstants.BLUELEDPIN, False)
+        GPIO.output(PinConstants.BLUE_LED_PIN, False)
 
 
 # RGB headlight mixed colour functions.

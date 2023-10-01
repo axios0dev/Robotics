@@ -6,42 +6,42 @@
 import RPi.GPIO as GPIO
 from time import sleep
 # AxiosRoboticsRCv1 unit modules.
-from Modules.ConstLib import CommonConstants
-from Modules.ConstLib import PinConstants
+from Modules.ConstantLibrary import CommonConstants
+from Modules.ConstantLibrary import PinConstants
 from Modules.LEDSubsystem import TaillightController 
 
 # GPIO pin configuration.
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 # Front left motor.
-GPIO.setup(PinConstants.FRONTLEFTMOTORREVERSEPIN, GPIO.OUT)  # IN1
-GPIO.setup(PinConstants.FRONTLEFTMOTORFORWARDPIN, GPIO.OUT)  # IN2
-GPIO.setup(PinConstants.FRONTLEFTMOTORSPEEDCONTROLPIN, GPIO.OUT)
+GPIO.setup(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, GPIO.OUT)  # IN1
+GPIO.setup(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, GPIO.OUT)  # IN2
+GPIO.setup(PinConstants.FRONT_LEFT_MOTOR_SPEED_CONTROL_PIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-FrontLeftMtrPWM = GPIO.PWM(PinConstants.FRONTLEFTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+FrontLeftMtrPWM = GPIO.PWM(PinConstants.FRONT_LEFT_MOTOR_SPEED_CONTROL_PIN, CommonConstants.PWM_FREQUENCY)
 FrontLeftMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 # Front right motor.
-GPIO.setup(PinConstants.FRONTRIGHTMOTORFORWARDPIN, GPIO.OUT)  # IN3
+GPIO.setup(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, GPIO.OUT)  # IN3
 GPIO.setup(PinConstants.FRONTRIGHTMOTORREVERSEPIN, GPIO.OUT)  # IN4
-GPIO.setup(PinConstants.FRONTRIGHTMOTORSPEEDCONTROLPIN, GPIO.OUT)
+GPIO.setup(PinConstants.FRONT_RIGHT_MOTOR_SPEED_CONTROL_PIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-FrontRightMtrPWM = GPIO.PWM(PinConstants.FRONTRIGHTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+FrontRightMtrPWM = GPIO.PWM(PinConstants.FRONT_RIGHT_MOTOR_SPEED_CONTROL_PIN, CommonConstants.PWM_FREQUENCY)
 FrontRightMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 
 # Rear motor controller pin configuration.
 # Rear left motor.
-GPIO.setup(PinConstants.REARLEFTMOTORREVERSEPIN, GPIO.OUT)  # IN3
-GPIO.setup(PinConstants.REARLEFTMOTORFORWARDPIN, GPIO.OUT)  # IN4
-GPIO.setup(PinConstants.REARLEFTMOTORSPEEDCONTROLPIN, GPIO.OUT)
+GPIO.setup(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, GPIO.OUT)  # IN3
+GPIO.setup(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, GPIO.OUT)  # IN4
+GPIO.setup(PinConstants.REAR_LEFT_MOTOR_SPEED_CONTROL_PIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-RearLeftMtrPWM = GPIO.PWM(PinConstants.REARLEFTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+RearLeftMtrPWM = GPIO.PWM(PinConstants.REAR_LEFT_MOTOR_SPEED_CONTROL_PIN, CommonConstants.PWM_FREQUENCY)
 RearLeftMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 # Rear right motor.
-GPIO.setup(PinConstants.REARRIGHTMOTORREVERSEPIN, GPIO.OUT)  # IN1
-GPIO.setup(PinConstants.REARRIGHTMOTORFORWARDPIN, GPIO.OUT)  # IN2
-GPIO.setup(PinConstants.REARRIGHTMOTORSPEEDCONTROLPIN, GPIO.OUT)
+GPIO.setup(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, GPIO.OUT)  # IN1
+GPIO.setup(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, GPIO.OUT)  # IN2
+GPIO.setup(PinConstants.REAR_RIGHT_MOTOR_SPEED_CONTROL_PIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-RearRightMtrPWM = GPIO.PWM(PinConstants.REARRIGHTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+RearRightMtrPWM = GPIO.PWM(PinConstants.REAR_RIGHT_MOTOR_SPEED_CONTROL_PIN, CommonConstants.PWM_FREQUENCY)
 RearRightMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 
 
@@ -69,15 +69,15 @@ def DriveForward(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, False)
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, False)
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, True)
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, False)
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, False)
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, False)
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, False)
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, False)
     sleep(Duration)
 
 
@@ -93,15 +93,15 @@ def DriveBackwards(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, False)
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, True)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, False)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, False)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, True)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, False)  
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, True)  
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, False)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, True)
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, True)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, False)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, True)
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, True)  
     sleep(Duration)
 
 
@@ -118,15 +118,15 @@ def TurnLeft(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, False)  
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, False)
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, False)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, False)
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, True)
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, False)  
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, False)
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, False)
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, False)
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, False)
     sleep(Duration)
 
 
@@ -143,15 +143,15 @@ def PivotLeft(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, False)  
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, True)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, True)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, False)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, True)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, True)  
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, False)  
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, False)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, True)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, False)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, False)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, True)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, False)  
     sleep(Duration)
 
 
@@ -168,15 +168,15 @@ def TurnRight(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, False)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, False)  
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, False)  
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, False)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, False)  
     sleep(Duration)
 
 
@@ -193,15 +193,15 @@ def PivotRight(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, False)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, False)
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, True)  
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, False)
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, True)
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, False)
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, True)
     sleep(Duration)
 
 
@@ -212,15 +212,15 @@ def StopMotors():
     # Turn on brake lights.
     TaillightController.BrakeLightsOn(CommonConstants.FULL_BRIGHTNESS)
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, True)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, True)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, True)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, True)  
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, True)  
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, True)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, True)
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, True)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, True)
 
 
 # This mode contains the functionality for the rear wheel drive burnout 
@@ -236,15 +236,15 @@ def Burnout(RequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, True)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, True)  
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, True)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, True)  
     GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, True)
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, False)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, False)  
     sleep(Duration)
 
     
@@ -261,13 +261,13 @@ def RollingBurnout(FrontRequestedSpeed, RearRequestedSpeed, Duration):
     
     # Motor controls.
     # Front motors.
-    GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)
-    GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.FRONTRIGHTMOTORREVERSEPIN, False)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_FORWARD_PIN, True)
+    GPIO.output(PinConstants.FRONT_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.FRONT_RIGHT_MOTOR_REVERSE_PIN, False)
     # Rear motors.
-    GPIO.output(PinConstants.REARLEFTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARLEFTMOTORREVERSEPIN, False)  
-    GPIO.output(PinConstants.REARRIGHTMOTORFORWARDPIN, True)  
-    GPIO.output(PinConstants.REARRIGHTMOTORREVERSEPIN, False)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_LEFT_MOTOR_REVERSE_PIN, False)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_FORWARD_PIN, True)  
+    GPIO.output(PinConstants.REAR_RIGHT_MOTOR_REVERSE_PIN, False)  
     sleep(Duration)
