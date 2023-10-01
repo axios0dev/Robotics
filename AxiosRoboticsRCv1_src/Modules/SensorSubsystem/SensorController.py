@@ -22,6 +22,12 @@ def ClearSerialBuffers():
         SerialConnection.reset_input_buffer()
         SerialConnection.reset_output_buffer()
 
+        
+# This function should be called when before shutting down the AxiosRoboticsRCv1 unit to close the serial
+# connection to the sensor module.        
+def CleanupSerialConnection():
+    SensorController.CleanupSerialConnection       
+
 
 # Constant definition of the detection distance and debouncer detection threshold time.
 DETECTION_DISTANCE: Final[int] = 15
@@ -83,44 +89,69 @@ class SensorDetectionDebouncer:
                     # Set the thread safe detection flag to notify the other routines of the detection so it can
                     # be handled accordingly. 
                     RightSensorDetection.set()
+                    # Capture this as the last detection time.
                     self.RightSensorLastDetectionTime = datetime.now()
                     print("right snensor debounce detection")
         # If not object is within the detection threshold unset the last detection time.         
         else:
             self.RightSensorLastDetectionTime = None   
-    
 
+
+# This routine contains the functionality to send the ‘ON’ command to the front sensor module and receives the
+# readings sent out from the module back over the serial connection. Once the module receives the ‘ON’ command
+# over the serial connection, the module will continue to report the readings from each sensor until this routine
+# is stopped at which point the clean up functionality is run which sends the ‘OFF’ command to the module.
+# A thread safe event is passed to this function to keep this routine running in a separate thread.
 def SensorSerialRoutine(SensorThreadState):
-    
+    # Create an instance of the SensorDetectionDebouncer() class,
+    # this is used to filter out false detections on from the sensor module.
     SensorDebouncer = SensorDetectionDebouncer()
-    
+    # Call the serial buffer clear function to ensure that both the input and output buffer of
+    # the UART serial connection is empty before the monitoring routine starts. 
     ClearSerialBuffers()
+    # Send the ON command to the sensor module.
     SerialConnection.write(b"ON\n")   
-    
+    # Sleep for 50ms to ensure the ON command is received before beginning serial monitoring.
     sleep(0.05)
     
+    # Keep this routine running while the thread event is set, stop this routine and run the clean up
+    # section once this is unset.
     while SensorThreadState.is_set():
+        # Check if any serial data has been received and is waiting to be read from the buffer.
         if (SerialConnection.in_waiting > 0):
+            # This try catch block will handle any errors encountered when the data read from the serial
+            # buffer is not the expected data type or is garbled.
             try:
+                # Read the string serial data and strip out the line terminator character.
                 SensorSerialData = SerialConnection.readline().decode('utf-8').rstrip()
+                # This is the initial msg that is expected from the sensor module once it has received the 
+                # 'ON' command indicating the modules sensor reading reporting routine is starting.
                 if(SensorSerialData == "Starting sensor reading routine..."):
+                    # Print the msg to the terminal and continue to the next loop iteration.
                     print(SensorSerialData)
                     continue
-                    
-                LeftSensorData, RightSensorData = SensorSerialData.split(",")
-                LeftSensorData = int(LeftSensorData.strip("L:"))
-                RightSensorData = int(RightSensorData.strip("R:"))
-                        
-                SensorDetectionDebouncer.CheckForValidDetection(SensorDetectionDebouncer, LeftSensorData, RightSensorData)        
-          
+                # This case will read the keyed sensor data into a string and perform string processing 
+                # to parse out each sensors individual distance value into an int.
+                else:
+                    # Split the keyed data into a left and right value, split at the ',' delimiter.    
+                    LeftSensorData, RightSensorData = SensorSerialData.split(",")
+                    # Strip out the L: and R: key and store the raw sensor reading value.
+                    LeftSensorData = int(LeftSensorData.strip("L:"))
+                    RightSensorData = int(RightSensorData.strip("R:"))
+                    # Call the sensor debouncer reading validation check to parse out false detections and 
+                    # report all valid detections via the thread event flags.    
+                    SensorDebouncer.CheckForValidDetection(LeftSensorData, RightSensorData)        
+            # Catch the serial buffer data type decode error. 
             except UnicodeDecodeError:
                 print("Serial buffer data error detected.")
-                    
+        # Sleep for 20ms to limit the rate of serial link readings, this limits CPU usage for this routine.
+        # The sensor module firmware reports sensor distance readings every 100ms so a reading rate of the serial
+        # link of 20ms is plenty to ensure this routine keeps up with the sensor module data.             
         sleep(0.02)  
-        
-    print("cleaning up thread")  
+    # This is the final cleanup logic to turn off the sensor module.    
+    print("Stopping sensor reading routine...")  
     SerialConnection.write(b"OFF\n")
-    SerialConnection.close()
+    CleanupSerialConnection()
         
             
 def main():
