@@ -26,7 +26,7 @@ def ClearSerialBuffers():
 # This function should be called when before shutting down the AxiosRoboticsRCv1 unit to close the serial
 # connection to the sensor module.        
 def CleanupSerialConnection():
-    SensorController.CleanupSerialConnection       
+    SerialConnection.close()   
 
 
 # Constant definition of the detection distance and debouncer detection threshold time.
@@ -160,7 +160,7 @@ def main():
     
     Thread(target=SensorSerialRoutine, args=(SensorThreadStateEvent,)).start()
      
-    sleep(100)
+    sleep(3)
     print("unsetting thread state")
     SensorThreadStateEvent.clear()
     
