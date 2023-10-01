@@ -6,13 +6,13 @@
 from typing import Final
 
 # Xbox 360 controller joystick and trigger constants.
-LEFTJOYSTICKDEADZONE: Final[float] = 0.4
-RIGHTJOYSTICKDEADZONE: Final[float] = 0.2
-RIGHTJOYSTICKHALFPOS: Final[float] = 0.6
-TRIGGERDEADZONE: Final[float] = 0.2
-TRIGGERQTRPRESSED: Final[float] = 0.25
-TRIGGERHALFPRESSED: Final[float] = 0.50
-TRIGGERTHREEQTRPRESSED: Final[float] = 0.75
+LEFT_JOYSTICK_DEADZONE: Final[float] = 0.4
+RIGHT_JOYSTICK_DEADZONE: Final[float] = 0.2
+RIGHT_JOYSTICK_HALFPOS: Final[float] = 0.6
+TRIGGER_DEADZONE: Final[float] = 0.2
+TRIGGER_QTR_PRESSED: Final[float] = 0.25
+TRIGGER_HALF_PRESSED: Final[float] = 0.50
+TRIGGER_THREE_QTR_PRESSED: Final[float] = 0.75
 
 # RGB Headlight colour constants.
 RED: Final[str] = "RED"
@@ -24,42 +24,41 @@ MAGENTA: Final[str] = "MAGENTA"
 WHITE: Final[str] = "WHITE"
 ORANGE: Final[str] = "ORANGE"
 # Constant array of headlights colours to cycle.
-HEADLIGHTCOLOURS: Final = [RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, ORANGE]
-HEADLIGHTCOLOURSLENGTH: Final[int] = len(HEADLIGHTCOLOURS)
+HEADLIGHT_COLOURS: Final = [RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, ORANGE]
+HEADLIGHT_COLOURS_LENGTH: Final[int] = len(HEADLIGHTCOLOURS)
 # Default headlight colour on startup.
-DEFAULTHEADLIGHTCOLOUR: Final[str] = CYAN
+DEFAULT_HEADLIGHT_COLOUR: Final[str] = CYAN
 
 # RGB LED state selection constants.
-LEDON: Final[str] = "ON"
-LEDOFF: Final[str] = "OFF"
-NEXTCOLOUR: Final[str] = "NEXT"
-PREVCOLOUR: Final[str] = "PREV"
-FIRSTCOLOURIDX: Final[int] = 0
-LASTCOLOURIDX: Final[int] = HEADLIGHTCOLOURSLENGTH
+LED_ON: Final[str] = "ON"
+LED_OFF: Final[str] = "OFF"
+NEXT_COLOUR: Final[str] = "NEXT"
+PREV_COLOUR: Final[str] = "PREV"
+FIRST_COLOUR_IDX: Final[int] = 0
+LAST_COLOUR_IDX: Final[int] = HEADLIGHTCOLOURSLENGTH
 
 # Independent physical unit side definitions.
-BOTHSIDES: Final[str]= "BOTH"
-LEFTSIDE: Final[str]= "LEFT"
-RIGHTSIDE: Final[str]= "RIGHT"
+BOTH_SIDES: Final[str]= "BOTH"
+LEFT_SIDE: Final[str]= "LEFT"
+RIGHT_SIDE: Final[str]= "RIGHT"
 
 # PWM duty cycle constants.
-PWMNODUTY: Final[int] = 0
-PWMTWENTYFIVEDUTY: Final[int] = 25
-PWMFIFTYDUTY: Final[int] = 50
-PWMSEVENTYFIVEDUTY: Final[int] = 75
-PWMHUNDREDDUTY: Final[int] = 100
+PWM_NO_DUTY: Final[int] = 0
+PWM_TWENTY_FIVE_DUTY: Final[int] = 25
+PWM_FIFTY_DUTY: Final[int] = 50
+PWM_SEVENTY_FIVE_DUTY: Final[int] = 75
+PWM_HUNDRED_DUTY: Final[int] = 100
 # PWM frequency.
-PWMFREQUENCY: Final[int] = 100
+PWM_FREQUENCY: Final[int] = 100
 
 # Movement speed constants.
-DEFAULTACTIONDURATION: Final[int] = 0.1
-FRONTMOTORCRAWLSPEED: Final[int] = 7
-LOWGEARSPEED: Final[int] = 30
-ONEQTRSPEED: Final[int] = PWMTWENTYFIVEDUTY
-HALFSPEED: Final[int] = PWMFIFTYDUTY
-THREEQTRSPEED: Final[int] = PWMSEVENTYFIVEDUTY
-FULLSPEED: Final[int] = PWMHUNDREDDUTY
+DEFAULT_ACTION_DURATION: Final[int] = 0.1
+LOW_GEAR_SPEED: Final[int] = 30
+ONE_QTR_SPEED: Final[int] = PWMTWENTYFIVEDUTY
+HALF_SPEED: Final[int] = PWMFIFTYDUTY
+THREE_QTR_SPEED: Final[int] = PWMSEVENTYFIVEDUTY
+FULL_SPEED: Final[int] = PWMHUNDREDDUTY
 
 # LED brightness constant definitions.
-FULLBRIGHTNESS: Final[int] = PWMHUNDREDDUTY
+FULL_BRIGHTNESS: Final[int] = PWMHUNDREDDUTY
 

@@ -38,7 +38,7 @@ def StartControllerRoutine():
     SelfDrivingAIActive = False
     
     # Turn on the RGB headlights at their currently set default colour.
-    HeadlightController.RGBColorCycle(CommonConstants.DEFAULTHEADLIGHTCOLOUR)
+    HeadlightController.RGBColorCycle(CommonConstants.DEFAULT_HEADLIGHT_COLOUR)
     RGBHeadLightOn = True
     
     # This infinite loop unifies all of the underlying functionality of the Xbox 360 controller
@@ -111,24 +111,24 @@ def StartControllerRoutine():
             ControllerDebouncer.SetButtonDpadUpPressed()
             # Turn on RGB headlights.
             if (not RGBHeadLightOn):
-                Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.LEDON)
+                Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.LED_ON)
             # Turn on RGB headlights.
             elif (RGBHeadLightOn):
-                Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.LEDOFF)   
+                Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.LED_OFF)   
                 
         # Dpad left pressed - Cycles back through RGB headlight colour set.
         elif Controller.dpadLeft() and (not ControllerDebouncer.DpadLeftPressed):
             # Set the debouncer button state to pressed.
             ControllerDebouncer.SetButtonDpadLeftPressed()
             # Cycle back through colours.
-            Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.PREVCOLOUR)
+            Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.PREV_COLOUR)
             
         # Dpad right pressed - Cycles forward through RGB headlight colour set.
         elif Controller.dpadRight() and (not ControllerDebouncer.DpadRightPressed):
             # Set the debouncer button state to pressed.
             ControllerDebouncer.SetButtonDpadRightPressed()
              # Cycle forward through colours.
-            Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.NEXTCOLOUR)
+            Xbox360ControllerRoutines.RGBHeadlightDpadRoutine(CommonConstants.NEXT_COLOUR)
                                         
         # Guide button pressed - Activates/deactivates the rolling burnout easter egg mode.
         elif Controller.Guide() and (not ControllerDebouncer.ButtonGuidePressed):
@@ -175,29 +175,29 @@ def StartControllerRoutine():
         # Thumbstick mapping logic.
         # Left thumbstick x-axis controls the left and right turn functionality.
         # Turn left.
-        elif (LeftStickXPos < -CommonConstants.LEFTJOYSTICKDEADZONE):
-            MotorController.TurnLeft(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
-            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
+        elif (LeftStickXPos < -CommonConstants.LEFT_JOYSTICK_DEADZONE):
+            MotorController.TurnLeft(CommonConstants.FULL_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
+            MotorController.DriveForward(CommonConstants.FULL_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
         # Turn right.    
-        elif (LeftStickXPos > CommonConstants.LEFTJOYSTICKDEADZONE):
-            MotorController.TurnRight(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
-            MotorController.DriveForward(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
+        elif (LeftStickXPos > CommonConstants.LEFT_JOYSTICK_DEADZONE):
+            MotorController.TurnRight(CommonConstants.FULL_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
+            MotorController.DriveForward(CommonConstants.FULL_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
         
         # Right thumbstick pivot logic.
         # If the right thumbstick is moved perform the pivot functionality.
-        elif (RightStickXPos <= -CommonConstants.RIGHTJOYSTICKDEADZONE) or (RightStickXPos >= CommonConstants.RIGHTJOYSTICKDEADZONE):
+        elif (RightStickXPos <= -CommonConstants.RIGHT_JOYSTICK_DEADZONE) or (RightStickXPos >= CommonConstants.RIGHT_JOYSTICK_DEADZONE):
             Xbox360ControllerRoutines.PivotRoutine(RightStickXPos)    
      
         # Trigger mapping logic.
-        # Right trigger pressed - Performs the reverse trigger functionality.        
+        # Left trigger pressed - Performs the reverse trigger functionality.        
         # Reverse 2-speed, reverse at 30% speed if the trigger is half depressed.
-        elif (LeftTrigger > CommonConstants.TRIGGERDEADZONE) and (LeftTrigger <= CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(CommonConstants.LOWGEARSPEED, CommonConstants.DEFAULTACTIONDURATION)
+        elif (LeftTrigger > CommonConstants.TRIGGER_DEADZONE) and (LeftTrigger <= CommonConstants.TRIGGER_HALF_PRESSED):
+            MotorController.DriveBackwards(CommonConstants.LOW_GEAR_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
         # Reverse at 100$ speed if the trigger is overhalf way depressed.
-        elif (LeftTrigger > CommonConstants.TRIGGERHALFPRESSED):
-            MotorController.DriveBackwards(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
+        elif (LeftTrigger > CommonConstants.TRIGGER_HALF_PRESSED):
+            MotorController.DriveBackwards(CommonConstants.FULL_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
                         
-        # Left trigger pressed - Accelerate trigger logic performed depending on current drive mode.
+        # Right trigger pressed - Accelerate trigger logic performed depending on current drive mode.
         # Check for special drive mode overrides first. 
         # 4-Speed Rear Wheel Drive Mode.
         elif RearWheelDriveBurnoutEnabled:

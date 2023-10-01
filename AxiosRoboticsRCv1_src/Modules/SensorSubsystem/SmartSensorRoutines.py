@@ -21,9 +21,9 @@ def AvoidCollision(Side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, Side)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS, Side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
-    MotorController.DriveBackwards(CommonConstants.FULLSPEED, 0.3)
+    MotorController.DriveBackwards(CommonConstants.FULL_SPEED, 0.3)
     # Turn off indicator after this routine has finished.
     TaillightController.IndicatorLightsOff(Side)
     # Return back to the ControllerRoutines function.
@@ -36,16 +36,16 @@ def AvoidEntrapment(Side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, Side)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS, Side)
     # Drive backwards for 0.4 seconds to avoid obstacle.
-    MotorController.DriveBackwards(CommonConstants.FULLSPEED, 0.4)
+    MotorController.DriveBackwards(CommonConstants.FULL_SPEED, 0.4)
     # Turn off indicator after this routine has finished.
     TaillightController.IndicatorLightsOff(Side)
     # Turn 90 degrees and continue
-    if(side == CommonConstants.LEFTSIDE):
-        MotorController.PivotLeft(CommonConstants.FULLSPEED, 0.6)
-    elif(side == CommonConstants.RIGHTSIDE):
-        MotorController.PivotRight(CommonConstants.FULLSPEED, 0.6)
+    if(side == CommonConstants.LEFT_SIDE):
+        MotorController.PivotLeft(CommonConstants.FULL_SPEED, 0.6)
+    elif(side == CommonConstants.RIGHT_SIDE):
+        MotorController.PivotRight(CommonConstants.FULL_SPEED, 0.6)
      # Return back to the ControllerRoutines function.
     return 
 
@@ -57,21 +57,21 @@ def AvoidObstacle(Side):
     # Stop all motors.
     MotorController.StopMotors()
     # Turn on the respective indicator to show which side the obstacle was detected on.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, Side)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS, Side)
     # Drive backwards for 0.3 seconds to avoid obstacle.
-    MotorController.DriveBackwards(CommonConstants.HALFSPEED, 0.5)
+    MotorController.DriveBackwards(CommonConstants.HALF_SPEED, 0.5)
     # Turn off indicator after this routine has finished.
     TaillightController.IndicatorLightsOff(Side)
       # Turn briefly and continue
-    if(side == CommonConstants.LEFTSIDE):
-        MotorController.TurnLeft(CommonConstants.FULLSPEED, 0.6)
-    elif(side == CommonConstants.RIGHTSIDE):
-        MotorController.TurnRight(CommonConstants.FULLSPEED, 0.6)
+    if(side == CommonConstants.LEFT_SIDE):
+        MotorController.TurnLeft(CommonConstants.FULL_SPEED, 0.6)
+    elif(side == CommonConstants.RIGHT_SIDE):
+        MotorController.TurnRight(CommonConstants.FULL_SPEED, 0.6)
     # Return back to the ControllerRoutines function.
     return 
 
 
-DETECTIONSUNTILENTRAPMENT: Final[int] = 3
+DETECTIONS_UNTIL_ENTRAPMENT: Final[int] = 3
 
 
 # The AxiosRoboticsRCv1 unit will enter an infinite loop and will drive around,
@@ -90,25 +90,25 @@ def SelfDrivingAI(Controller):
             return    
         # If entrapment is detected by reverse and turn to navigate out of the corner.
         # Entrapment by left side.    
-        elif (LeftSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):
-            AvoidEntrapment(CommonConstants.LEFTSIDE)
+        elif (LeftSensorDetectionCount == DETECTIONS_UNTIL_ENTRAPMENT):
+            AvoidEntrapment(CommonConstants.LEFT_SIDE)
             LeftSensorDetectionCount = 0
          # Entrapment by right side.       
-        elif (RightSensorDetectionCount == DETECTIONSUNTILENTRAPMENT):
-            AvoidEntrapment(CommonConstants.RIGHTSIDE)
+        elif (RightSensorDetectionCount == DETECTIONS_UNTIL_ENTRAPMENT):
+            AvoidEntrapment(CommonConstants.RIGHT_SIDE)
             RightSensorDetectionCount = 0 
         # Avoid all obstacles.    
         # Object detected on left side avoid obstacle.    
         elif (GPIO.input(LeftalrtAI) == 1):
-            AvoidObstacle(CommonConstants.LEFTSIDE)
+            AvoidObstacle(CommonConstants.LEFT_SIDE)
             LeftSensorDetectionCount += 1
         # Object detected on right side avoid obstacle.    
         elif (GPIO.input(RightalrtAI) == 1):
-            AvoidObstacle(CommonConstants.RIGHTSIDE)
+            AvoidObstacle(CommonConstants.RIGHT_SIDE)
             RightSensorDetectionCount += 1   
         # Drive forwards at full speed if no objects are detected.    
         else:
-            MotorController.DriveForwards(CommonConstants.FULLSPEED, CommonConstants.DEFAULTACTIONDURATION)
+            MotorController.DriveForwards(CommonConstants.FULL_SPEED, CommonConstants.DEFAULT_ACTION_DURATION)
     # Return back to the ControllerRoutines function.
     return 
 

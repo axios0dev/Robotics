@@ -18,15 +18,15 @@ GPIO.setup(PinConstants.FRONTLEFTMOTORREVERSEPIN, GPIO.OUT)  # IN1
 GPIO.setup(PinConstants.FRONTLEFTMOTORFORWARDPIN, GPIO.OUT)  # IN2
 GPIO.setup(PinConstants.FRONTLEFTMOTORSPEEDCONTROLPIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-FrontLeftMtrPWM = GPIO.PWM(PinConstants.FRONTLEFTMOTORSPEEDCONTROLPIN, CommonConstants.PWMFREQUENCY)
-FrontLeftMtrPWM.start(CommonConstants.PWMNODUTY)
+FrontLeftMtrPWM = GPIO.PWM(PinConstants.FRONTLEFTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+FrontLeftMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 # Front right motor.
 GPIO.setup(PinConstants.FRONTRIGHTMOTORFORWARDPIN, GPIO.OUT)  # IN3
 GPIO.setup(PinConstants.FRONTRIGHTMOTORREVERSEPIN, GPIO.OUT)  # IN4
 GPIO.setup(PinConstants.FRONTRIGHTMOTORSPEEDCONTROLPIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-FrontRightMtrPWM = GPIO.PWM(PinConstants.FRONTRIGHTMOTORSPEEDCONTROLPIN, CommonConstants.PWMFREQUENCY)
-FrontRightMtrPWM.start(CommonConstants.PWMNODUTY)
+FrontRightMtrPWM = GPIO.PWM(PinConstants.FRONTRIGHTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+FrontRightMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 
 # Rear motor controller pin configuration.
 # Rear left motor.
@@ -34,15 +34,15 @@ GPIO.setup(PinConstants.REARLEFTMOTORREVERSEPIN, GPIO.OUT)  # IN3
 GPIO.setup(PinConstants.REARLEFTMOTORFORWARDPIN, GPIO.OUT)  # IN4
 GPIO.setup(PinConstants.REARLEFTMOTORSPEEDCONTROLPIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-RearLeftMtrPWM = GPIO.PWM(PinConstants.REARLEFTMOTORSPEEDCONTROLPIN, CommonConstants.PWMFREQUENCY)
-RearLeftMtrPWM.start(CommonConstants.PWMNODUTY)
+RearLeftMtrPWM = GPIO.PWM(PinConstants.REARLEFTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+RearLeftMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 # Rear right motor.
 GPIO.setup(PinConstants.REARRIGHTMOTORREVERSEPIN, GPIO.OUT)  # IN1
 GPIO.setup(PinConstants.REARRIGHTMOTORFORWARDPIN, GPIO.OUT)  # IN2
 GPIO.setup(PinConstants.REARRIGHTMOTORSPEEDCONTROLPIN, GPIO.OUT)
 # PWM pin configuration at 100Hz.
-RearRightMtrPWM = GPIO.PWM(PinConstants.REARRIGHTMOTORSPEEDCONTROLPIN, CommonConstants.PWMFREQUENCY)
-RearRightMtrPWM.start(CommonConstants.PWMNODUTY)
+RearRightMtrPWM = GPIO.PWM(PinConstants.REARRIGHTMOTORSPEEDCONTROLPIN, CommonConstants.PWM_FREQUENCY)
+RearRightMtrPWM.start(CommonConstants.PWM_NO_DUTY)
 
 
 # Front motor speed control function.
@@ -109,9 +109,9 @@ def DriveBackwards(RequestedSpeed, Duration):
 def TurnLeft(RequestedSpeed, Duration):
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.BrakeLightsOff()
-    TaillightController.IndicatorLightsOff(CommonConstants.RIGHTSIDE)
+    TaillightController.IndicatorLightsOff(CommonConstants.RIGHT_SIDE)
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, CommonConstants.LEFTSIDE)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS, CommonConstants.LEFT_SIDE)
     # Speed controls.
     FrontMtrSpeed(RequestedSpeed)
     RearMtrSpeed(RequestedSpeed)
@@ -134,9 +134,9 @@ def TurnLeft(RequestedSpeed, Duration):
 def PivotLeft(RequestedSpeed, Duration):
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.BrakeLightsOff()
-    TaillightController.IndicatorLightsOff(CommonConstants.RIGHTSIDE)
+    TaillightController.IndicatorLightsOff(CommonConstants.RIGHT_SIDE)
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(RequestedSpeed, CommonConstants.LEFTSIDE)
+    TaillightController.IndicatorLightsOn(RequestedSpeed, CommonConstants.LEFT_SIDE)
     # Speed controls.
     FrontMtrSpeed(RequestedSpeed)
     RearMtrSpeed(RequestedSpeed)
@@ -159,9 +159,9 @@ def PivotLeft(RequestedSpeed, Duration):
 def TurnRight(RequestedSpeed, Duration):
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.BrakeLightsOff()
-    TaillightController.IndicatorLightsOff(CommonConstants.LEFTSIDE)
+    TaillightController.IndicatorLightsOff(CommonConstants.LEFT_SIDE)
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS, CommonConstants.RIGHTSIDE)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS, CommonConstants.RIGHT_SIDE)
     # Speed controls.
     FrontMtrSpeed(RequestedSpeed)
     RearMtrSpeed(RequestedSpeed)
@@ -184,9 +184,9 @@ def TurnRight(RequestedSpeed, Duration):
 def PivotRight(RequestedSpeed, Duration):
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.BrakeLightsOff()
-    TaillightController.IndicatorLightsOff(CommonConstants.LEFTSIDE)
+    TaillightController.IndicatorLightsOff(CommonConstants.LEFT_SIDE)
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(RequestedSpeed, CommonConstants.RIGHTSIDE)
+    TaillightController.IndicatorLightsOn(RequestedSpeed, CommonConstants.RIGHT_SIDE)
     # Speed controls.
     FrontMtrSpeed(RequestedSpeed)
     RearMtrSpeed(RequestedSpeed)
@@ -210,7 +210,7 @@ def StopMotors():
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.IndicatorLightsOff()
     # Turn on brake lights.
-    TaillightController.BrakeLightsOn(CommonConstants.FULLBRIGHTNESS)
+    TaillightController.BrakeLightsOn(CommonConstants.FULL_BRIGHTNESS)
     # Front motors.
     GPIO.output(PinConstants.FRONTLEFTMOTORFORWARDPIN, True)
     GPIO.output(PinConstants.FRONTLEFTMOTORREVERSEPIN, True)  
@@ -229,9 +229,9 @@ def Burnout(RequestedSpeed, Duration):
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.BrakeLightsOff()
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS)
     # Speed controls.
-    FrontMtrSpeed(CommonConstants.PWMNODUTY)
+    FrontMtrSpeed(CommonConstants.PWM_NO_DUTY)
     RearMtrSpeed(RequestedSpeed)
     
     # Motor controls.
@@ -254,7 +254,7 @@ def RollingBurnout(FrontRequestedSpeed, RearRequestedSpeed, Duration):
     # Ensure the tail light clusters are reset from previous action.
     TaillightController.BrakeLightsOff()
     # Tail light controls.
-    TaillightController.IndicatorLightsOn(CommonConstants.FULLBRIGHTNESS)
+    TaillightController.IndicatorLightsOn(CommonConstants.FULL_BRIGHTNESS)
     # Speed controls.
     FrontMtrSpeed(FrontRequestedSpeed)
     RearMtrSpeed(RearRequestedSpeed)

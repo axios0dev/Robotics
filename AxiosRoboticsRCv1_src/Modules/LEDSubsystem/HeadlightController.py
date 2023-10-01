@@ -19,86 +19,86 @@ GPIO.setup(PinConstants.BLUELEDPIN, GPIO.OUT)  #
 # RGB headlight base colour functions.
 # Red led on/off.
 def RedLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
+    if (RequestedState == CommonConstants.LED_ON):
         GPIO.output(PinConstants.REDLEDPIN, True)
-    elif (RequestedState == CommonConstants.LEDOFF):
+    elif (RequestedState == CommonConstants.LED_OFF):
         GPIO.output(PinConstants.REDLEDPIN, False)
 
 
 # Green led on/off.
 def GreenLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
+    if (RequestedState == CommonConstants.LED_ON):
         GPIO.output(PinConstants.GREENLEDPIN, True)
-    elif (RequestedState == CommonConstants.LEDOFF):
+    elif (RequestedState == CommonConstants.LED_OFF):
         GPIO.output(PinConstants.GREENLEDPIN, False)
 
 
 # Blue led on/off.
 def BlueLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
+    if (RequestedState == CommonConstants.LED_ON):
         GPIO.output(PinConstants.BLUELEDPIN, True)
-    elif (RequestedState == CommonConstants.LEDOFF):
+    elif (RequestedState == CommonConstants.LED_OFF):
         GPIO.output(PinConstants.BLUELEDPIN, False)
 
 
 # RGB headlight mixed colour functions.
 # Yellow led on/off.
 def YellowLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
-        RedLED(CommonConstants.LEDON)
-        GreenLED(CommonConstants.LEDON)
-    elif (RequestedState == CommonConstants.LEDOFF):
-        RedLED(CommonConstants.LEDOFF)
-        GreenLED(CommonConstants.LEDOFF)
+    if (RequestedState == CommonConstants.LED_ON):
+        RedLED(CommonConstants.LED_ON)
+        GreenLED(CommonConstants.LED_ON)
+    elif (RequestedState == CommonConstants.LED_OFF):
+        RedLED(CommonConstants.LED_OFF)
+        GreenLED(CommonConstants.LED_OFF)
 
 
 # Cyan led on/off.
 def CyanLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
-        GreenLED(CommonConstants.LEDON)
-        BlueLED(CommonConstants.LEDON)
-    elif (RequestedState == CommonConstants.LEDOFF):
-        GreenLED(CommonConstants.LEDOFF)
-        BlueLED(CommonConstants.LEDOFF)
+    if (RequestedState == CommonConstants.LED_ON):
+        GreenLED(CommonConstants.LED_ON)
+        BlueLED(CommonConstants.LED_ON)
+    elif (RequestedState == CommonConstants.LED_OFF):
+        GreenLED(CommonConstants.LED_OFF)
+        BlueLED(CommonConstants.LED_OFF)
 
 
 # Magenta led on/off.
 def MagentaLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
-        RedLED(CommonConstants.LEDON)
-        BlueLED(CommonConstants.LEDON)
-    elif (RequestedState == CommonConstants.LEDOFF):
-        RedLED(CommonConstants.LEDOFF)
-        BlueLED(CommonConstants.LEDOFF)
+    if (RequestedState == CommonConstants.LED_ON):
+        RedLED(CommonConstants.LED_ON)
+        BlueLED(CommonConstants.LED_ON)
+    elif (RequestedState == CommonConstants.LED_OFF):
+        RedLED(CommonConstants.LED_OFF)
+        BlueLED(CommonConstants.LED_OFF)
 
 
 # White led on/off.
 def WhiteLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
-        RedLED(CommonConstants.LEDON)
-        BlueLED(CommonConstants.LEDON)
-        GreenLED(CommonConstants.LEDON)
-    elif (RequestedState == CommonConstants.LEDOFF):
-        RedLED(CommonConstants.LEDOFF)
-        BlueLED(CommonConstants.LEDOFF)
-        GreenLED(CommonConstants.LEDOFF)
+    if (RequestedState == CommonConstants.LED_ON):
+        RedLED(CommonConstants.LED_ON)
+        BlueLED(CommonConstants.LED_ON)
+        GreenLED(CommonConstants.LED_ON)
+    elif (RequestedState == CommonConstants.LED_OFF):
+        RedLED(CommonConstants.LED_OFF)
+        BlueLED(CommonConstants.LED_OFF)
+        GreenLED(CommonConstants.LED_OFF)
 
 
 # Orange led on/off.
 def OrangeLED(RequestedState):
-    if (RequestedState == CommonConstants.LEDON):
-        RedLED(CommonConstants.LEDON)
-        YellowLED(CommonConstants.LEDON)
-    elif (RequestedState == CommonConstants.LEDOFF):
-        RedLED(CommonConstants.LEDOFF)
-        YellowLED(CommonConstants.LEDOFF)
+    if (RequestedState == CommonConstants.LED_ON):
+        RedLED(CommonConstants.LED_ON)
+        YellowLED(CommonConstants.LED_ON)
+    elif (RequestedState == CommonConstants.LED_OFF):
+        RedLED(CommonConstants.LED_OFF)
+        YellowLED(CommonConstants.LED_OFF)
 
 
 # Function to disable all LED pins.        
-def LedOff():
-    RedLED(CommonConstants.LEDOFF)
-    GreenLED(CommonConstants.LEDOFF)
-    BlueLED(CommonConstants.LEDOFF)
+def LEDOff():
+    RedLED(CommonConstants.LED_OFF)
+    GreenLED(CommonConstants.LED_OFF)
+    BlueLED(CommonConstants.LED_OFF)
 
 
 # Function to select RBG LED colour.
@@ -107,34 +107,34 @@ def RGBColorCycle(RequestedColour):
     # unwanted colour mixing occurs.
     # Red LED.
     if (RequestedColour == CommonConstants.RED):
-        LedOff()
-        RedLED(CommonConstants.LEDON)
+        LEDOff()
+        RedLED(CommonConstants.LED_ON)
     # Green LED.
     elif (RequestedColour == CommonConstants.GREEN):
-        LedOff()
-        GreenLED(CommonConstants.LEDON)
+        LEDOff()
+        GreenLED(CommonConstants.LED_ON)
     # Blue LED.
     elif (RequestedColour == CommonConstants.BLUE):
-        LedOff()
-        BlueLED(CommonConstants.LEDON)
+        LEDOff()
+        BlueLED(CommonConstants.LED_ON)
     # Yellow LED.
     elif (RequestedColour == CommonConstants.YELLOW):
-        LedOff()
-        YellowLED(CommonConstants.LEDON)
+        LEDOff()
+        YellowLED(CommonConstants.LED_ON)
     # Cyan LED.
     elif (RequestedColour == CommonConstants.CYAN):
-        LedOff()
-        CyanLED(CommonConstants.LEDON)
+        LEDOff()
+        CyanLED(CommonConstants.LED_ON)
     # Magenta LED.
     elif (RequestedColour == CommonConstants.MAGENTA):
-        LedOff()
-        MagentaLED(CommonConstants.LEDON)
+        LEDOff()
+        MagentaLED(CommonConstants.LED_ON)
     # White LED.
     elif (RequestedColour == CommonConstants.WHITE):
-        LedOff()
-        WhiteLED(CommonConstants.LEDON)
+        LEDOff()
+        WhiteLED(CommonConstants.LED_ON)
     # Orange LED.
     elif (RequestedColour == CommonConstants.ORANGE):
-        LedOff()
-        OrangeLED(CommonConstants.LEDON)
+        LEDOff()
+        OrangeLED(CommonConstants.LED_ON)
 
