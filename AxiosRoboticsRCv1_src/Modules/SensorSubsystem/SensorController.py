@@ -31,7 +31,7 @@ def CleanupSerialConnection():
 
 # Constant definition of the detection distance and debouncer detection threshold time.
 DETECTION_DISTANCE: Final[int] = 15
-DEBOUNCE_TIME_MS: Final[int] = 300
+DEBOUNCE_TIME_MS: Final[int] = 150
 # Global thread safe flags which are set when an object has been detected on a respective
 # sensor after the debouncer class has verified the detection. 
 LeftSensorDetection = Event()
@@ -111,8 +111,8 @@ def SensorSerialRoutine(SensorThreadState):
     ClearSerialBuffers()
     # Send the ON command to the sensor module.
     SerialConnection.write(b"ON\n")   
-    # Sleep for 50ms to ensure the ON command is received before beginning serial monitoring.
-    sleep(0.05)
+    # Sleep for 15ms to ensure the ON command is received before beginning serial monitoring.
+    sleep(0.015)
     
     # Keep this routine running while the thread event is set, stop this routine and run the clean up
     # section once this is unset.
@@ -144,10 +144,10 @@ def SensorSerialRoutine(SensorThreadState):
             # Catch the serial buffer data type decode error. 
             except UnicodeDecodeError:
                 print("Serial buffer data error detected.")
-        # Sleep for 20ms to limit the rate of serial link readings, this limits CPU usage for this routine.
+        # Sleep for 50ms to limit the rate of serial link readings, this limits CPU usage for this routine.
         # The sensor module firmware reports sensor distance readings every 100ms so a reading rate of the serial
-        # link of 20ms is plenty to ensure this routine keeps up with the sensor module data.             
-        sleep(0.02)  
+        # link of 50ms is plenty to ensure this routine keeps up with the sensor module data.             
+        sleep(0.05)  
     # This is the final cleanup logic to turn off the sensor module.    
     print("Stopping sensor reading routine...")  
     SerialConnection.write(b"OFF\n")
@@ -160,7 +160,7 @@ def main():
     
     Thread(target=SensorSerialRoutine, args=(SensorThreadStateEvent,)).start()
      
-    sleep(3)
+    sleep(100)
     print("unsetting thread state")
     SensorThreadStateEvent.clear()
     
